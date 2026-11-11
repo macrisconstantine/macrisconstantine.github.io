@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Constantine Macris — Software &amp; Game Developer</title>
+<meta name="description" content="Constantine Macris — software and game developer in Chicago. A published Android game, a Unity RPG whose companion NPC runs on a local 7B language model, an honors thesis on detecting depression from clinical interviews, and production ASP.NET work. Explorable portfolio.">
+<meta name="author" content="Constantine Macris">
+<meta name="theme-color" content="#0c0a14">
+<link rel="canonical" href="https://macrisconstantine.github.io/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Constantine Macris — Software &amp; Game Developer">
+<meta property="og:description" content="An explorable portfolio. Six districts, thirty things he actually built, and arcade cabinets that run the real games.">
+<meta property="og:url" content="https://macrisconstantine.github.io/">
+<meta property="og:image" content="https://macrisconstantine.github.io/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A pixel-art overworld with paths leading to six districts, captioned Constantine Macris, Software Developer and Game Developer.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://macrisconstantine.github.io/preview.png">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230c0a14'/%3E%3Cpath fill='%234fd98a' d='M4 2h8v3H4zM3 5h10v6H3zM4 11h2v3H4zM10 11h2v3h-2z'/%3E%3Cpath fill='%23f2c9a0' d='M5 3h6v2H5z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Constantine Macris",
+  "jobTitle": "Software Developer",
+  "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
+  "email": "mailto:c.macris@gatech.edu",
+  "url": "https://macrisconstantine.github.io/",
+  "sameAs": [
+    "https://github.com/macrisconstantine",
+    "https://www.linkedin.com/in/constantine-macris/"
+  ],
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "Georgia Institute of Technology" },
+    { "@type": "CollegeOrUniversity", "name": "Deree — The American College of Greece" }
+  ],
+  "knowsLanguage": ["English", "Greek"]
+}
+</script>
+</head>
+
+<body>
+<a class="skip" href="#resume">Skip to the plain résumé</a>
+
+<!-- ===================== the explorable world ===================== -->
+<div id="world" class="world">
+  <div id="stage" class="stage">
+    <canvas id="screen" tabindex="0" aria-label="An explorable pixel world containing the portfolio. Press R at any time for a plain text résumé."></canvas>
+
+    <div id="zone-banner" class="zone-banner" aria-hidden="true"></div>
+
+    <div id="hud" class="hud">
+      <div class="hud-left">
+        <span id="hud-zone" class="hud-zone">The Crossroads</span>
+      </div>
+      <div class="hud-right">
+        <span id="hud-level" class="chip">LV 1</span>
+        <span class="bar" id="hud-bar"><span></span></span>
+        <span class="chip frag"><b id="hud-frag">0/30</b> fragments</span>
+        <span class="chip pct" id="hud-pct">0%</span>
+      </div>
+    </div>
+
+    <div id="prompt" class="prompt" aria-hidden="true"></div>
+
+    <div id="dialogue" class="dialogue" aria-hidden="true" aria-live="polite">
+      <div class="d-name"></div>
+      <div class="d-text"></div>
+      <div class="d-hint">▼</div>
+    </div>
+
+    <div id="toasts" class="toasts" aria-live="polite"></div>
+
+    <div class="touch" id="touch" aria-hidden="true">
+      <div class="stick" id="stick"><span class="knob" id="knob"></span></div>
+      <button class="dashbtn" id="dashbtn" aria-label="Roll">↯</button>
+      <button class="actbtn" id="actbtn" aria-label="Interact">E</button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-shell"><div class="modal-body"></div></div>
+  </div>
+
+  <div id="mapview" class="mapview" aria-hidden="true"></div>
+</div>
+
+<!-- ===================== persistent controls ===================== -->
+<div class="topbar">
+  <button id="btn-sound" class="tb" aria-pressed="false" title="Music off" aria-label="Toggle music">♪</button>
+  <button id="btn-map" class="tb" title="Map (M)" aria-label="Open map">▦</button>
+  <button id="btn-mode" class="tb wide" title="Switch view (R)">Résumé</button>
+</div>
+
+<!-- ===================== the plain résumé =====================
+     This is real HTML, not generated. It is what a screen reader reads,
+     what a search engine indexes, what prints, and what you get with
+     JavaScript switched off. The world above is layered on top of it.
+================================================================= -->
+<main id="resume" class="resume" aria-hidden="true">
+
+  <header class="r-head">
+    <div class="r-id">
+      <h1>Constantine Macris</h1>
+      <p class="r-title">Software Developer · Game Developer</p>
+      <p class="r-loc">Chicago, Illinois</p>
+    </div>
+    <ul class="r-links">
+      <li><a href="mailto:c.macris@gatech.edu">c.macris@gatech.edu</a></li>
+      <li><a href="https://github.com/macrisconstantine" target="_blank" rel="noopener noreferrer">github.com/macrisconstantine</a></li>
+      <li><a href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener noreferrer">linkedin.com/in/constantine-macris</a></li>
+      <li><a href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener noreferrer">Taxi Cat on Google Play</a></li>
+    </ul>
+  </header>
+
+  <section class="r-summary">
+    <p class="lede">A published Android game. A Unity action RPG whose companion NPC thinks with a 7-billion-parameter
+      language model running on your own machine. An honors thesis that put LSTMs up against local LLMs on clinical
+      interview data. And, by day, lead contributor on two production applications that people depend on to get paid.</p>
+    <p>Most interested in where gameplay systems meet model behaviour — where a system has to feel alive and still be
+      debuggable at 2am.</p>
+    <p class="r-play"><a class="playlink" href="#" id="enter-world">↳ Or explore the interactive version of this portfolio</a></p>
+  </section>
+
+  <!-- ------------------------------------------------------------- -->
+  <section class="r-sec" id="r-projects">
+    <h2>Selected work</h2>
+
+    <article class="r-proj">
+      <h3>Pots of Pottimea <span class="r-meta">2D action RPG · Unity, C# · 2022, revisited 2024</span></h3>
+      <p>A Zelda-inspired 2D action RPG built solo in Unity over a single semester. <strong>39 C# scripts</strong> covering
+        movement and animation state machines, enemy AI, health and damage handling, destructibles and projectiles, menus
+        and UI, and NPC navigation through the A* Pathfinding Project.</p>
+      <p class="r-sub">Two years later it became the host body for his capstone — see <em>The companion that thinks</em> below.</p>
+      <p class="r-ln"><a href="https://github.com/macrisconstantine/pots-of-pottimea" target="_blank" rel="noopener noreferrer">Source and build ↗</a></p>
+    </article>
+
+    <article class="r-proj">
+      <h3>The companion that thinks <span class="r-meta">Capstone · OpenHermes-2.5-Mistral-7B in Unity · 2024</span></h3>
+      <p>Tore out the companion NPC's dialogue tree and replaced it with a language model running
+        <strong>locally on the player's machine</strong> — no API key, no network call, no per-token bill.
+        OpenHermes-2.5-Mistral-7B quantised to Q4_K_M, served through llamafile and wired into the engine with LLMUnity.</p>
+      <p>A context pipeline feeds live quest and inventory state into the prompt so the companion knows what you are
+        actually carrying and where you actually are; prompt constraints hold it inside the game's lore; and the whole
+        round trip stays fast enough to still feel conversational on consumer hardware. That last constraint drove every
+        decision above.</p>
+      <p class="r-ln"><a href="https://github.com/macrisconstantine/capstone-companion" target="_blank" rel="noopener noreferrer">Source and build ↗</a></p>
+    </article>
+
+    <article class="r-proj">
+      <h3>Taxi Cat <span class="r-meta">Android arcade game · Java, Android SDK · published 2023</span></h3>
+      <p>A published arcade game, live and free on the Google Play Store since 2023. Built in Android Studio with Java and
+        XML layouts: character customisation, a persistent high-score leaderboard, and escalating waves of oncoming taxis.</p>
+      <p>It started from a tutorial foundation and kept going into the part tutorials stop short of — signing, release
+        configuration, writing the store listing, and surviving Play Store review.</p>
+      <p class="r-ln"><a href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener noreferrer">Google Play ↗</a>
+        · <a href="https://github.com/macrisconstantine/taxi-cat-android-game" target="_blank" rel="noopener noreferrer">Source and APK ↗</a></p>
+    </article>
+
+    <article class="r-proj">
+      <h3>Detecting depression from clinical interviews <span class="r-meta">Honors thesis · Python, Keras, Django · 2023–24</span></h3>
+      <p>Obtained access to the restricted <strong>DAIC-WOZ</strong> clinical interview corpus, built the ingest and
+        cleaning pipeline across <strong>189 interviews and 283,000 words</strong>, and trained single- and double-layer
+        LSTM classifiers in Keras over GloVe embeddings to predict PHQ-8 severity.</p>
+      <p>Then benchmarked them against <strong>Mistral 7B Instruct</strong> and <strong>WizardLM 13B</strong> run locally,
+        with prompt design forcing structured output so the comparison was genuinely like for like — and shipped a Django
+        front end for real-time analysis and side-by-side model comparison.</p>
+      <p class="r-ln"><a href="https://github.com/macrisconstantine/depression-detection-thesis" target="_blank" rel="noopener noreferrer">Source ↗</a></p>
+    </article>
+
+    <article class="r-proj">
+      <h3>Playable right now <span class="r-meta">live browser builds</span></h3>
+      <p>Several projects are deployed and run in the browser without downloading anything:</p>
+      <ul class="r-list">
+        <li><a href="https://macrisconstantine.github.io/debunking-pseudoscience/" target="_blank" rel="noopener noreferrer">Debunking Physics ↗</a> — Unity WebGL. Fly a ship around a solar system whose physical laws you can edit from the pause menu.</li>
+        <li><a href="https://macrisconstantine.github.io/chess-app/public/index.html" target="_blank" rel="noopener noreferrer">Chess ↗</a> — full legal move generation, including the fiddly parts people skip.</li>
+        <li><a href="https://macrisconstantine.github.io/falling-sand/" target="_blank" rel="noopener noreferrer">Falling Sand ↗</a> — a cellular automaton, and an unusually honest README.</li>
+        <li><a href="https://macrisconstantine.github.io/donut/" target="_blank" rel="noopener noreferrer">Donut ↗</a> — the famous ASCII torus, taken apart and rebuilt readably.</li>
+        <li><a href="https://macrisconstantine.github.io/monty-hall-problem/" target="_blank" rel="noopener noreferrer">Monty Hall ↗</a> — probability demonstrated rather than argued.</li>
+        <li><a href="https://macrisconstantine.pythonanywhere.com/" target="_blank" rel="noopener noreferrer">Game Cave ↗</a> — Django catalogue with role-based access, a recommender and AJAX ratings.</li>
+      </ul>
+    </article>
+  </section>
+
+  <!-- ------------------------------------------------------------- -->
+  <section class="r-sec" id="r-work">
+    <h2>Professional experience</h2>
+
+    <article class="r-job">
+      <h3>Software Developer <span class="r-meta">Gecko Software LLC · Chicago, IL · Nov 2024 – present</span></h3>
+      <p>Lead contributor on two production ASP.NET / VB.NET applications backed by SQL Server.
+        <strong>89 tracked tickets and 223 commits in the year to October 2026 — roughly two thirds of the team's output.</strong></p>
+
+      <h4>Built a quote-to-approval system from nothing</h4>
+      <p>Now ~<strong>10,500 lines</strong> and the largest single feature in the platform: staged requests that survive a
+        half-finished session, duplicate detection both in-form and against the database, live price calculation, Excel
+        price-sheet generation, and email notification on every state change.</p>
+
+      <h4>Rebuilt the price estimator, and scored it honestly</h4>
+      <p>Leave-one-out against 229 hand-priced historical quotes:</p>
+      <table class="r-stats">
+        <thead><tr><th>Measure</th><th>Before</th><th>After</th></tr></thead>
+        <tbody>
+          <tr><td>Coverage</td><td>63%</td><td><strong>97%</strong></td></tr>
+          <tr><td>Median error</td><td>275%</td><td><strong>13%</strong></td></tr>
+          <tr><td>Estimates within 25% of true price</td><td>2%</td><td><strong>71%</strong></td></tr>
+        </tbody>
+      </table>
+      <p>Getting there meant proving the pricing was not a black box: it is a separable multiplicative formula, recoverable
+        per product line. A deterministic calculator beat the machine-learning approach outright, with a calibrated
+        quantile model kept only as a clearly-labelled fallback for the families it could not cover. Knowing when
+        <em>not</em> to reach for a model is the point, and the measurement is what proved it.</p>
+      <p>The rewrite also surfaced a silent failure — a local variable shadowing a same-named function, legal in VB,
+        compiles clean — that had been returning blank estimates for the life of the application domain. Nobody had filed
+        a ticket; they had simply stopped trusting the number.</p>
+
+      <h4>Performance</h4>
+      <p>Cut the slowest screen in daily use from <strong>8.3 s to 1.6 s</strong> with server-side paging, a lightweight
+        count query and in-query sorting. Separately took a home page from <strong>~49 SQL round trips per load to ~16</strong>
+        by caching role lookups and batching into multi-result-set commands. Both came from measuring first and finding the
+        pages were latency-bound rather than query-bound.</p>
+    </article>
+
+    <article class="r-job">
+      <h3>Earlier <span class="r-meta">Athens, Greece · 2020–2024</span></h3>
+      <ul class="r-list">
+        <li><strong>Deree — The American College of Greece</strong> — computer labs assistant and technical support;
+          student affairs receptionist and liaison; volunteer orientation leader.</li>
+        <li><strong>Hellenic Ministries</strong> (summers 2020–2023) — warehouse manager. Recruited, trained and
+          coordinated teams of <strong>10 to 35 volunteers</strong> through 20–60 pallets of literature packets in
+          sixteen-day pushes, up to 170,000 packets. Not a software job, and the best evidence here that he can run a
+          plan with other people in it.</li>
+      </ul>
+    </article>
+  </section>
+
+  <!-- ------------------------------------------------------------- -->
+  <section class="r-sec" id="r-edu">
+    <h2>Education</h2>
+    <article class="r-job">
+      <h3>M.S. Computer Science <span class="r-meta">Georgia Institute of Technology (OMSCS) · Jan 2026 – 2029</span></h3>
+      <p>Machine Learning specialisation, part-time alongside full-time work.
+        Completed <strong>CS 7646 Machine Learning for Trading</strong>; currently taking <strong>CS 7641 Machine Learning</strong>.</p>
+    </article>
+    <article class="r-job">
+      <h3>B.Sc. Information Technology, Software Development <span class="r-meta">Deree — The American College of Greece · May 2024</span></h3>
+      <p>Validated by The Open University (UK). <strong>GPA 3.95 / 4.00</strong>, honors programme.
+        Honors thesis on detecting depression from clinical interview transcripts. Significant coursework in C programming,
+        internet programming, Android development and object-oriented programming.</p>
+    </article>
+  </section>
+
+  <!-- ------------------------------------------------------------- -->
+  <section class="r-sec" id="r-skills">
+    <h2>Skills</h2>
+    <dl class="r-skills">
+      <dt>Game development</dt>
+      <dd>Unity (C#) · Android (Java) · 2D gameplay systems · A* Pathfinding Project · animation state machines ·
+        collision &amp; physics · sprite pipelines · build &amp; Play Store deployment</dd>
+      <dt>Machine learning</dt>
+      <dd>Keras · LSTM &amp; sequence models · GloVe embeddings · leave-one-out scoring · calibration and error
+        distributions · quantile regression · local LLM inference (GGUF, llamafile) · LLMUnity · prompt design for
+        structured output</dd>
+      <dt>Languages</dt>
+      <dd>C# · Java · Python · JavaScript · C · SQL · PL/SQL · VB.NET · Bash · HTML · CSS</dd>
+      <dt>Backend &amp; data</dt>
+      <dd>ASP.NET / VB.NET · SQL Server · PostgreSQL · Django · query optimisation · server-side paging · schema design ·
+        ERP integration</dd>
+      <dt>Tools</dt>
+      <dd>Unity · Android Studio · Git (incl. LFS) · Visual Studio · VS Code · PyCharm · IntelliJ · Vim · Photoshop ·
+        Illustrator</dd>
+      <dt>Languages spoken</dt>
+      <dd>English (native) · Greek (proficient)</dd>
+    </dl>
+  </section>
+
+  <!-- ------------------------------------------------------------- -->
+  <section class="r-sec" id="r-repos">
+    <h2>All public repositories <span class="r-count" id="r-repo-count"></span></h2>
+    <p>Everything on the account, including the coursework, the throwaways and the one called <code>hello</code> from
+      September 2021. A portfolio that only shows the hits is a sales page; this is the record.</p>
+    <div class="r-repolist" id="r-repolist">
+      <p><a href="https://github.com/macrisconstantine?tab=repositories" target="_blank" rel="noopener noreferrer">Browse all 58 repositories on GitHub ↗</a></p>
+    </div>
+  </section>
+
+  <footer class="r-foot">
+    <p><strong>Constantine Macris</strong> · Chicago, IL ·
+      <a href="mailto:c.macris@gatech.edu">c.macris@gatech.edu</a> ·
+      <a href="https://github.com/macrisconstantine" target="_blank" rel="noopener noreferrer">GitHub</a> ·
+      <a href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
+    <p class="r-colophon">Hand-written HTML, CSS and ES modules. No framework, no build step and no dependencies. The
+      explorable version contains no image assets at all — every sprite in it is pixel art stored as text and painted to
+      a canvas at load, and the music is synthesised in the browser. Hosted free on GitHub Pages. No analytics, no
+      cookies, no tracking; progress is saved in your browser and nowhere else.</p>
+  </footer>
+</main>
+
+<noscript>
+  <style>#world,.topbar{display:none!important}#resume{display:block!important}</style>
+</noscript>
+
+<script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
