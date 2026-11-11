@@ -69,7 +69,9 @@ export class Screen {
 const KEYMAP = {
   ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
   KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right',
-  KeyE: 'act', Space: 'act', Enter: 'act',
+  // Space gets its own action so it can double as the roll when there is
+  // nothing in reach to interact with. E and Enter stay purely "interact".
+  KeyE: 'act', Enter: 'act', Space: 'space',
   ShiftLeft: 'sprint', ShiftRight: 'sprint',
   KeyZ: 'dash', KeyX: 'dash', ControlLeft: 'dash',
   Escape: 'back', KeyR: 'resume', KeyM: 'map', Comma: 'mute',
@@ -184,6 +186,10 @@ export class Input {
   }
 
   consume(a) { const had = this.pressed.has(a); this.pressed.delete(a); return had && this.enabled; }
+
+  /** Drop a press that has already been handled on the keydown path. */
+  swallow(a) { this.pressed.delete(a); }
+
   endFrame() { this.pressed.clear(); }
 }
 

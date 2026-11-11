@@ -59,7 +59,7 @@ export const ENTRIES = {
     sub: 'a cat of no fixed occupation',
     barks: [
       'Oh good, someone else. Walk with the arrow keys or WASD.',
-      '**Hold Shift to run.** **Z or X to roll** — it is faster than running and much more satisfying.',
+      '**Hold Shift to run.** **Space rolls** when nothing is in reach, and so do Z and X — it is faster than running and much more satisfying.',
       'Press E — or Space — next to anything that looks interesting. I will explain it.',
       'Everything here is real. The arcade cabinets run the actual games. The terminal takes actual commands.',
       'I will tag along from here. Press E on me any time you want this again.',
@@ -101,8 +101,8 @@ export const ENTRIES = {
     body: [
       '**Move** — arrow keys, WASD, or the stick in the corner on a phone.',
       '**Run** — hold Shift, or push the stick to its edge.',
-      '**Roll** — Z, X or Ctrl, or the ↯ button on a phone. A short burst, faster than running, with a brief cooldown.',
-      '**Interact** — E or Space when something is glowing. Esc closes anything.',
+      '**Roll** — Space when nothing is in reach, or Z, X or Ctrl any time, or the ↯ button on a phone. A short burst, faster than running, with a brief cooldown.',
+      '**Interact** — E, or Space when something is glowing. The same key closes what it opened; Esc closes anything.',
       '**Résumé mode** — R, or the button top-right. Same content, no game, prints cleanly, works with a screen reader.',
       '**Map and progress** — M. **Music** — comma, or the ♪ button.',
       'Progress saves to this browser only. Nothing is uploaded anywhere; there is no server and no analytics.',

@@ -109,6 +109,20 @@ export class Game {
       if (this.ui.el.dialogue.classList.contains('show')) return this.ui.dismissDialogue();
     }
     if (a === 'map' && !this.ui.stack.length) { this.ui.toggleMap(); return; }
+
+    // Closing a panel has to happen here rather than in the update loop:
+    // opening one sets input.enabled = false, so consume('act') never fires
+    // again and the key that opened it could not close it.
+    if (a === 'act' || a === 'space') {
+      if (this.ui.mapOpen()) { this.ui.closeMap(); this.input.swallow(a); return; }
+      if (this.ui.stack.length) {
+        const top = this.ui.stack[this.ui.stack.length - 1];
+        // Space types in the terminal and retries in the cabinet, so those
+        // two close on Escape or the × only.
+        if (top !== 'terminal' && top !== 'arcade') this.closeOverlay();
+        this.input.swallow(a);
+      }
+    }
   }
 
   closeOverlay() {
@@ -162,7 +176,8 @@ export class Game {
       if (g.life <= 0) this.ghosts.splice(i, 1);
     }
 
-    if (this.input.consume('act')) this.act();
+    if (this.input.consume('act')) this.act(false);
+    if (this.input.consume('space')) this.act(true);
     this.input.endFrame();
 
     this.cam.follow(this.player.x, this.player.y, this.room.w * TILE, this.room.h * TILE, dt);
@@ -308,8 +323,10 @@ export class Game {
     c.x += c.vx * dt;
     c.y += c.vy * dt;
 
-    // Face the way it is going, with a deadzone so it does not flicker.
-    if (Math.abs(c.vx) > 14) c.flip = c.vx < 0;
+    // The cat is drawn front-on with its tail out to the right, so the flip
+    // is the opposite way round to the player's side-view sprite: mirror it
+    // when running right, so the tail trails behind rather than leading.
+    if (Math.abs(c.vx) > 14) c.flip = c.vx > 0;
     c.hop += dt * (Math.hypot(c.vx, c.vy) > 8 ? 9 : 0);
   }
 
@@ -385,19 +402,26 @@ export class Game {
 
   /* ------------------------------ interaction --------------------------- */
 
-  act() {
+  /** @param {boolean} canRoll — space rolls when there is nothing to talk to. */
+  act(canRoll = false) {
     if (this.ui.mapOpen()) return this.ui.closeMap();
-    if (this.ui.stack.length) {
-      // Whatever key opened a panel should close it again. The terminal and
-      // the arcade cabinet are the exceptions: space means something else in
-      // both, so they close on Escape or the × only.
-      const top = this.ui.stack[this.ui.stack.length - 1];
-      if (top !== 'terminal' && top !== 'arcade') this.closeOverlay();
-      return;
-    }
+    if (this.ui.stack.length) return;      // handled on the keydown path
     if (this.ui.advance()) return;
-    if (!this.near) return;
-    this.interact(this.near);
+    // The cat trails you everywhere and sits inside interaction range, so it
+    // would otherwise be the target of every single press. Space treats it as
+    // scenery and rolls instead; E still talks to it.
+    const onlyTheCat = this.near === this.companion;
+    if (this.near && !(canRoll && onlyTheCat)) return this.interact(this.near);
+    if (canRoll) this.requestDash();
+  }
+
+  /** Roll now if the cooldown allows, in whatever direction is held. */
+  requestDash() {
+    const p = this.player;
+    if (p.dash > 0 || p.dashCd > 0) return;
+    const d = this.input.dir();
+    const mag = Math.hypot(d.x, d.y);
+    this.startDash(mag ? d.x / mag : 0, mag ? d.y / mag : 0);
   }
 
   interact(obj) {

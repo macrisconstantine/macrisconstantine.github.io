@@ -356,7 +356,7 @@ export class UI {
         <div class="introgrid">
           <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span>move</span></div>
           <div><kbd>Shift</kbd> <span>run</span></div>
-          <div><kbd>Z</kbd> <span>roll</span></div>
+          <div><kbd>Space</kbd> <span>roll</span></div>
           <div><kbd>E</kbd> <span>interact</span></div>
           <div><kbd>M</kbd> <span>map</span></div>
           <div><kbd>R</kbd> <span>plain résumé</span></div>
