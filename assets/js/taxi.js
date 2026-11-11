@@ -5,7 +5,7 @@
    runs inside the cabinet so the mechanic is in your hands immediately.
    ========================================================================= */
 
-import { sprite } from './sprites.js';
+import { sprite, drawText } from './sprites.js';
 import { save } from './save.js';
 
 const W = 180, H = 280;
@@ -164,13 +164,9 @@ export class TaxiGame {
 
     if (this.dead) {
       c.fillStyle = 'rgba(12,10,20,0.82)'; c.fillRect(0, 0, W, H);
-      c.fillStyle = '#ff6ec7'; c.font = 'bold 15px "Courier New", monospace'; c.textAlign = 'center';
-      c.fillText('FLATTENED', W / 2, H / 2 - 18);
-      c.fillStyle = '#e8e4d8'; c.font = '12px "Courier New", monospace';
-      c.fillText('score ' + this.score, W / 2, H / 2 + 4);
-      c.fillStyle = '#8a86a0'; c.font = '10px "Courier New", monospace';
-      c.fillText('space / tap to retry', W / 2, H / 2 + 26);
-      c.textAlign = 'left';
+      drawText(c, 'FLATTENED', W / 2, H / 2 - 30, '#ff6ec7', 'center', true, 2);
+      drawText(c, 'SCORE ' + this.score, W / 2, H / 2 + 2, '#e8e4d8', 'center', true, 1);
+      drawText(c, 'SPACE OR TAP TO RETRY', W / 2, H / 2 + 24, '#8a86a0', 'center', true, 1);
     }
   }
 

@@ -4,7 +4,7 @@
 
 import { Screen, Input, Camera, Particles, Sound, VIEW } from './engine.js';
 import { TILE, T, ROOMS, FLOORS, buildRoom, isSolid, mulberry32 } from './world.js';
-import { sprite, spriteFlipped, ICONS } from './sprites.js';
+import { sprite, spriteFlipped, ICONS, drawText, textWidth } from './sprites.js';
 import { ENTRIES, DISTRICTS, ACHIEVEMENTS } from './data.js';
 import { UI } from './ui.js';
 import { Terminal } from './terminal.js';
@@ -43,7 +43,7 @@ export class Game {
       dash: 0, dashCd: 0, dashX: 0, dashY: 0, sprint: false, dust: 0,
     };
     this.ghosts = [];          // afterimages left by a roll
-    this.companion = { x: 0, y: 0, active: false, trail: [], flip: false, hop: 0, pet: true, accent: '#ff9a3c' };
+    this.companion = { x: 0, y: 0, vx: 0, vy: 0, active: false, flip: false, hop: 0, pet: true, accent: '#ff9a3c' };
     this.near = null;
     this.t = 0;
     this.transition = 0;
@@ -165,7 +165,7 @@ export class Game {
     if (this.input.consume('act')) this.act();
     this.input.endFrame();
 
-    this.cam.follow(this.player.x, this.player.y, this.room.w * TILE, this.room.h * TILE);
+    this.cam.follow(this.player.x, this.player.y, this.room.w * TILE, this.room.h * TILE, dt);
   }
 
   movePlayer(dt) {
@@ -283,23 +283,34 @@ export class Game {
     c.active = save.has('guide');
     if (!c.active) return;
     const p = this.player;
-    // Changed room, or got left behind by a roll: catch up rather than
-    // chasing a breadcrumb trail that is no longer connected to anything.
-    if (!c.spawned || c.room !== this.room.id || Math.hypot(p.x - c.x, p.y - c.y) > 76) {
+    // Changed room, or got left behind entirely: reappear rather than
+    // trudging across the map.
+    const far = Math.hypot(p.x - c.x, p.y - c.y);
+    if (!c.spawned || c.room !== this.room.id || far > 150) {
       c.spawned = true; c.room = this.room.id;
-      c.x = p.x - 14; c.y = p.y + 4; c.trail.length = 0;
+      c.x = p.x - 14; c.y = p.y + 4; c.vx = 0; c.vy = 0;
+      return;
     }
-    c.trail.push({ x: p.x, y: p.y });
-    if (c.trail.length > 11) c.trail.shift();
-    const want = c.trail[0];
-    const dx = want.x - c.x, dy = want.y - c.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist > 11) {
-      const k = Math.min(1, dt * 10);
-      c.x += dx * k; c.y += dy * k;
-      if (Math.abs(dx) > 1) c.flip = dx < 0;
-      c.hop += dt * Math.min(16, 4 + dist * 0.55);
-    }
+
+    // Seek the player, with a standoff so it settles instead of jittering
+    // on top of you, and a speed that scales with how far behind it is.
+    const STOP = 17;          // close enough; stand still
+    const dx = p.x - c.x, dy = p.y - c.y;
+    const d = far || 1;
+    let speed = 0;
+    if (d > STOP) speed = Math.min(230, (d - STOP) * 7 + 26);
+
+    // Ease toward that speed so starts and stops are not instant.
+    const tvx = (dx / d) * speed, tvy = (dy / d) * speed;
+    const k = Math.min(1, dt * 9);
+    c.vx += (tvx - c.vx) * k;
+    c.vy += (tvy - c.vy) * k;
+    c.x += c.vx * dt;
+    c.y += c.vy * dt;
+
+    // Face the way it is going, with a deadzone so it does not flicker.
+    if (Math.abs(c.vx) > 14) c.flip = c.vx < 0;
+    c.hop += dt * (Math.hypot(c.vx, c.vy) > 8 ? 9 : 0);
   }
 
   moveBy(dx, dy) {
@@ -356,9 +367,12 @@ export class Game {
       const d = Math.hypot(ox - this.player.x, oy - this.player.y);
       if (d < bestD) { bestD = d; best = o; }
     }
-    if (this.companion.active) {
+    // The cat is always the closest thing to you, so it only gets offered
+    // when nothing in the world is in reach — otherwise it would hijack
+    // every single E press.
+    if (!best && this.companion.active) {
       const d = Math.hypot(this.companion.x - this.player.x, this.companion.y - this.player.y);
-      if (d < bestD) { bestD = d; this.companion.entry = 'guide'; best = this.companion; }
+      if (d < REACH) { this.companion.entry = 'guide'; best = this.companion; }
     }
     if (best !== this.near) {
       this.near = best;
@@ -373,7 +387,14 @@ export class Game {
 
   act() {
     if (this.ui.mapOpen()) return this.ui.closeMap();
-    if (this.ui.stack.length) return;
+    if (this.ui.stack.length) {
+      // Whatever key opened a panel should close it again. The terminal and
+      // the arcade cabinet are the exceptions: space means something else in
+      // both, so they close on Escape or the × only.
+      const top = this.ui.stack[this.ui.stack.length - 1];
+      if (top !== 'terminal' && top !== 'arcade') this.closeOverlay();
+      return;
+    }
     if (this.ui.advance()) return;
     if (!this.near) return;
     this.interact(this.near);
@@ -631,8 +652,6 @@ export class Game {
   }
 
   drawExits(c, room, ox, oy) {
-    c.font = '7px "Courier New", monospace';
-    c.textAlign = 'center';
     for (const e of room.exits) {
       const px = e.x * TILE - ox, py = e.y * TILE - oy;
       // Off screen: skip entirely, so a clamped label never floats with no door.
@@ -650,20 +669,34 @@ export class Game {
       c.fillRect(px + 1, py + 3, 2, TILE - 6);
       c.fillRect(px + TILE - 3, py + 3, 2, TILE - 6);
       c.globalAlpha = 1;
+
+      // marker: a diamond, or a cross when it is still sealed
       c.fillStyle = col;
-      c.fillText(locked ? '✕' : '◆', px + TILE / 2, py + TILE / 2 + 3);
+      const mx = px + TILE / 2 - 2, my = py + TILE / 2 - 2;
+      if (locked) {
+        c.fillRect(mx, my, 1, 1); c.fillRect(mx + 4, my, 1, 1);
+        c.fillRect(mx + 1, my + 1, 1, 1); c.fillRect(mx + 3, my + 1, 1, 1);
+        c.fillRect(mx + 2, my + 2, 1, 1);
+        c.fillRect(mx + 1, my + 3, 1, 1); c.fillRect(mx + 3, my + 3, 1, 1);
+        c.fillRect(mx, my + 4, 1, 1); c.fillRect(mx + 4, my + 4, 1, 1);
+      } else {
+        c.fillRect(mx + 2, my, 1, 1);
+        c.fillRect(mx + 1, my + 1, 3, 1);
+        c.fillRect(mx, my + 2, 5, 1);
+        c.fillRect(mx + 1, my + 3, 3, 1);
+        c.fillRect(mx + 2, my + 4, 1, 1);
+      }
 
       if (locked) continue;
       // Label, kept inside the viewport so it never clips off the edge.
-      const w = Math.ceil(c.measureText(e.label).width) + 10;
+      const tw = textWidth(e.label);
+      const w = tw + 8;
       const lx = Math.max(w / 2 + 3, Math.min(VIEW.w - w / 2 - 3, px + TILE / 2));
-      const ly = py < 24 ? py + TILE + 12 : py - 10;
-      c.fillStyle = 'rgba(8,6,14,0.82)';
-      c.fillRect(Math.round(lx - w / 2), ly - 8, w, 11);
-      c.fillStyle = col;
-      c.fillText(e.label, Math.round(lx), ly);
+      const ly = py < 26 ? py + TILE + 5 : py - 14;
+      c.fillStyle = 'rgba(8,6,14,0.84)';
+      c.fillRect(Math.round(lx - w / 2), ly - 2, w, 12);
+      drawText(c, e.label, lx, ly + 1, col, 'center', false);
     }
-    c.textAlign = 'left';
   }
 
   /** Frame index that stays in range whatever the clock does. */
@@ -735,12 +768,15 @@ export class Game {
     const frame = p.moving ? (Math.floor(Math.abs(p.anim)) % 2) : 0;
     const base = `player_${p.dir}_${frame}`;
     const art = (p.dir === 'side' && p.flip) ? spriteFlipped(base) : sprite(base);
-    const px = Math.round(p.x - art.w / 2);
-    const py = Math.round(p.y - art.h + 6);
+    // Screen space, not world space: everything else subtracts the camera
+    // offset, and the player must too or the sprite drifts off its own
+    // collision box as the camera scrolls.
+    const px = Math.round(p.x - ox - art.w / 2);
+    const py = Math.round(p.y - oy - art.h + 6);
 
     c.fillStyle = 'rgba(0,0,0,0.32)';
     c.beginPath();
-    c.ellipse(Math.round(p.x), Math.round(p.y + 6), 6, 2.5, 0, 0, Math.PI * 2);
+    c.ellipse(Math.round(p.x - ox), Math.round(p.y - oy + 6), 6, 2.5, 0, 0, Math.PI * 2);
     c.fill();
     c.drawImage(art.canvas, px, py);
   }

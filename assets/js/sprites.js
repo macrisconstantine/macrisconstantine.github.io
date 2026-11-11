@@ -704,6 +704,124 @@ export const ART = {
   ],
 };
 
+/* -------------------------------------------------------------------------
+   A 5x7 bitmap font.
+
+   Canvas text drawn at 7px and then scaled up with nearest-neighbour
+   filtering turns to mush, so in-world lettering is pixels like everything
+   else. Uppercase only — it is a sign in a pixel world, not body copy.
+   ------------------------------------------------------------------------- */
+
+const GLYPHS = {
+  A: '.###.|#...#|#...#|#####|#...#|#...#|#...#',
+  B: '####.|#...#|#...#|####.|#...#|#...#|####.',
+  C: '.####|#....|#....|#....|#....|#....|.####',
+  D: '####.|#...#|#...#|#...#|#...#|#...#|####.',
+  E: '#####|#....|#....|####.|#....|#....|#####',
+  F: '#####|#....|#....|####.|#....|#....|#....',
+  G: '.###.|#...#|#....|#.###|#...#|#...#|.###.',
+  H: '#...#|#...#|#...#|#####|#...#|#...#|#...#',
+  I: '#####|..#..|..#..|..#..|..#..|..#..|#####',
+  J: '..###|...#.|...#.|...#.|...#.|#..#.|.##..',
+  K: '#...#|#..#.|#.#..|##...|#.#..|#..#.|#...#',
+  L: '#....|#....|#....|#....|#....|#....|#####',
+  M: '#...#|##.##|#.#.#|#...#|#...#|#...#|#...#',
+  N: '#...#|##..#|#.#.#|#..##|#...#|#...#|#...#',
+  O: '.###.|#...#|#...#|#...#|#...#|#...#|.###.',
+  P: '####.|#...#|#...#|####.|#....|#....|#....',
+  Q: '.###.|#...#|#...#|#...#|#.#.#|#..#.|.##.#',
+  R: '####.|#...#|#...#|####.|#.#..|#..#.|#...#',
+  S: '.####|#....|#....|.###.|....#|....#|####.',
+  T: '#####|..#..|..#..|..#..|..#..|..#..|..#..',
+  U: '#...#|#...#|#...#|#...#|#...#|#...#|.###.',
+  V: '#...#|#...#|#...#|#...#|#...#|.#.#.|..#..',
+  W: '#...#|#...#|#...#|#...#|#.#.#|##.##|#...#',
+  X: '#...#|#...#|.#.#.|..#..|.#.#.|#...#|#...#',
+  Y: '#...#|#...#|.#.#.|..#..|..#..|..#..|..#..',
+  Z: '#####|....#|...#.|..#..|.#...|#....|#####',
+  0: '.###.|#...#|#..##|#.#.#|##..#|#...#|.###.',
+  1: '..#..|.##..|..#..|..#..|..#..|..#..|#####',
+  2: '.###.|#...#|....#|...#.|..#..|.#...|#####',
+  3: '####.|....#|....#|.###.|....#|....#|####.',
+  4: '#..#.|#..#.|#..#.|#####|...#.|...#.|...#.',
+  5: '#####|#....|####.|....#|....#|#...#|.###.',
+  6: '.###.|#....|#....|####.|#...#|#...#|.###.',
+  7: '#####|....#|...#.|..#..|..#..|.#...|.#...',
+  8: '.###.|#...#|#...#|.###.|#...#|#...#|.###.',
+  9: '.###.|#...#|#...#|.####|....#|....#|.###.',
+  '.': '.....|.....|.....|.....|.....|.##..|.##..',
+  ',': '.....|.....|.....|.....|.##..|.##..|.#...',
+  "'": '..#..|..#..|.....|.....|.....|.....|.....',
+  '-': '.....|.....|.....|#####|.....|.....|.....',
+  '!': '..#..|..#..|..#..|..#..|..#..|.....|..#..',
+  '?': '.###.|#...#|....#|..##.|..#..|.....|..#..',
+  ':': '.....|.##..|.##..|.....|.##..|.##..|.....',
+  '/': '....#|....#|...#.|..#..|.#...|#....|#....',
+  '&': '.##..|#..#.|#.#..|.#...|#.#.#|#..#.|.##.#',
+  '+': '.....|..#..|..#..|#####|..#..|..#..|.....',
+  '%': '#...#|#..#.|...#.|..#..|.#...|.#..#|#...#',
+  '·': '.....|.....|.....|..#..|.....|.....|.....',
+  ' ': '.....|.....|.....|.....|.....|.....|.....',
+};
+
+export const GLYPH_W = 5, GLYPH_H = 7, GLYPH_GAP = 1;
+
+/** Width in pixels of a string rendered with the bitmap font. */
+export function textWidth(text) {
+  const n = String(text).length;
+  return n ? n * (GLYPH_W + GLYPH_GAP) - GLYPH_GAP : 0;
+}
+
+const textCache = new Map();
+
+/**
+ * Render a string to an off-screen canvas in the bitmap font.
+ * Cached, so repeated labels cost nothing per frame.
+ */
+export function textSprite(text, color = '#ffffff', shadow = true) {
+  const str = String(text).toUpperCase();
+  const key = str + '|' + color + '|' + (shadow ? 1 : 0);
+  if (textCache.has(key)) return textCache.get(key);
+
+  const w = textWidth(str), h = GLYPH_H;
+  const pad = shadow ? 1 : 0;
+  const cv = document.createElement('canvas');
+  cv.width = w + pad; cv.height = h + pad;
+  const ctx = cv.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+
+  const paint = (dx, dy, col) => {
+    ctx.fillStyle = col;
+    let cx = dx;
+    for (const ch of str) {
+      const rows = (GLYPHS[ch] || GLYPHS['?']).split('|');
+      for (let y = 0; y < rows.length; y++) {
+        for (let x = 0; x < rows[y].length; x++) {
+          if (rows[y][x] === '#') ctx.fillRect(cx + x, dy + y, 1, 1);
+        }
+      }
+      cx += GLYPH_W + GLYPH_GAP;
+    }
+  };
+
+  if (shadow) paint(1, 1, 'rgba(8,6,14,0.85)');
+  paint(0, 0, color);
+
+  const out = { canvas: cv, w: cv.width, h: cv.height, textW: w };
+  textCache.set(key, out);
+  return out;
+}
+
+/** Draw bitmap text. align: 'left' | 'center' | 'right'. */
+export function drawText(ctx, text, x, y, color, align = 'left', shadow = true, scale = 1) {
+  const s = textSprite(text, color, shadow);
+  const w = s.textW * scale;
+  const dx = align === 'center' ? Math.round(x - w / 2)
+    : align === 'right' ? Math.round(x - w) : Math.round(x);
+  ctx.drawImage(s.canvas, dx, Math.round(y), s.w * scale, s.h * scale);
+  return s;
+}
+
 /* ------------------------------------------------------------------------- */
 
 const cache = new Map();

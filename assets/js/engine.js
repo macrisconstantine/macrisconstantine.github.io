@@ -201,10 +201,12 @@ export class Camera {
     return { x, y };
   }
 
-  follow(tx, ty, roomW, roomH) {
+  /** dt-scaled so the camera feels the same on a 60Hz and a 144Hz screen. */
+  follow(tx, ty, roomW, roomH, dt = 1 / 60) {
     const w = this.target(tx, ty, roomW, roomH);
-    this.x += (w.x - this.x) * 0.16;
-    this.y += (w.y - this.y) * 0.16;
+    const k = 1 - Math.pow(1 - 0.16, Math.min(4, dt * 60));
+    this.x += (w.x - this.x) * k;
+    this.y += (w.y - this.y) * k;
   }
 
   /** Jump straight there — used when entering a room. */
