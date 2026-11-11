@@ -59,8 +59,8 @@ export const ENTRIES = {
     sub: 'a cat of no fixed occupation',
     barks: [
       'Oh good, someone else. Walk with the arrow keys or WASD.',
-      '**Hold Shift to run.** **Space rolls** when nothing is in reach, and so do Z and X. Keep rolling and you will outrun the running.',
-      'Press E — or Space — next to anything that looks interesting. I will explain it.',
+      '**Hold Shift to run.** **Space rolls** — so do Z and X. Keep rolling and you will outrun the running.',
+      'Press **E** next to anything that looks interesting, or just **click it**. I will explain it either way.',
       'Everything here is real. The arcade cabinets run the actual games. The terminal takes actual commands.',
       'I will tag along from here. Press E on me any time you want this again.',
       'If you are in a hurry, hit R. That swaps to the plain résumé — no walking, no pixels, all the same facts.',
@@ -72,7 +72,7 @@ export const ENTRIES = {
       'Constantine made me. He also built a companion NPC that follows you around a game he wrote, except that one thinks with a 7-billion-parameter language model running on your own machine. See **The Observatory**. I am the budget version and I am at peace with that.',
       'He also made a cat you can actually play as — it is in the Arcade, and it is on the Google Play Store, which is a sentence most side projects never get to say.',
     ],
-    tags: ['WASD to move', 'Shift to run', 'Z to roll', 'E to interact', 'R for résumé'],
+    tags: ['WASD to move', 'Shift to run', 'Space to roll', 'E or click to interact', 'R for résumé'],
   },
 
   monument: {
@@ -101,8 +101,8 @@ export const ENTRIES = {
     body: [
       '**Move** — arrow keys, WASD, or the stick in the corner on a phone.',
       '**Run** — hold Shift, or push the stick to its edge.',
-      '**Roll** — Space when nothing is in reach, or Z, X or Ctrl any time, or the ↯ button on a phone. Chain them and you cover ground about half again as fast as running; you keep the momentum coming out of each one. It also goes straight through crates.',
-      '**Interact** — E, or Space when something is glowing. The same key closes what it opened; Esc closes anything.',
+      '**Roll** — Space, or Z, X or Ctrl, or the ↯ button on a phone. Chain them and you cover ground about half again as fast as running; you keep the momentum coming out of each one. It also goes straight through crates.',
+      '**Interact** — E when something is glowing, or just click it. E closes what it opened; Esc closes anything, and Space will too.',
       '**Résumé mode** — R, or the button top-right. Same content, no game, prints cleanly, works with a screen reader.',
       '**Map and progress** — M. **Music** — comma, or the ♪ button.',
       'Progress saves to this browser only. Nothing is uploaded anywhere; there is no server and no analytics.',

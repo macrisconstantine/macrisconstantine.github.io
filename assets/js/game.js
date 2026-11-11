@@ -48,6 +48,7 @@ export class Game {
       dash: 0, dashCd: 0, dashX: 0, dashY: 0, sprint: false, dust: 0,
     };
     this.ghosts = [];          // afterimages left by a roll
+    this.hover = null;         // interactable under the mouse
     this.companion = { x: 0, y: 0, vx: 0, vy: 0, active: false, flip: false, hop: 0, pet: true, accent: '#ff9a3c' };
     this.near = null;
     this.t = 0;
@@ -66,6 +67,7 @@ export class Game {
   /* ------------------------------- lifecycle ---------------------------- */
 
   start() {
+    this.bindPointer();
     this.enterRoom('hub', ROOMS.hub.spawn.x, ROOMS.hub.spawn.y, true);
     this.ui.refreshHUD();
     this.running = true;
@@ -84,6 +86,7 @@ export class Game {
   enterRoom(id, tx, ty, instant) {
     if (!this.rooms[id]) this.rooms[id] = buildRoom(id);
     this.room = this.rooms[id];
+    this.near = null; this.hover = null;   // stale references to the old room
     this.player.x = tx * TILE + TILE / 2;
     this.player.y = ty * TILE + TILE / 2;
     // Snap, otherwise the first frame of a new room starts off the map.
@@ -167,11 +170,19 @@ export class Game {
 
     if (!blocked) {
       this.movePlayer(dt);
+      // A hover goes stale as soon as you walk: the world has slid under a
+      // cursor that has not moved. Moving the mouse re-establishes it.
+      if (this.player.moving && this.hover) {
+        this.hover = null;
+        this.canvas.style.cursor = '';
+      }
       this.checkExit();
       this.findNear();
     } else {
       this.player.moving = false;
       this.player.vx = this.player.vy = 0;
+      this.near = null; this.hover = null;
+      this.syncPrompt();
     }
 
     this.moveCompanion(dt);
@@ -409,13 +420,20 @@ export class Game {
       const d = Math.hypot(this.companion.x - this.player.x, this.companion.y - this.player.y);
       if (d < REACH) { this.companion.entry = 'guide'; best = this.companion; }
     }
-    if (best !== this.near) {
-      this.near = best;
-      if (best) {
-        const e = ENTRIES[best.entry];
-        this.ui.showPrompt(`E  ·  ${e.title}`);
-      } else this.ui.hidePrompt();
-    }
+    this.near = best;
+    this.syncPrompt();
+  }
+
+  /** One hint line, whether you walked up to a thing or pointed at it.
+      Pointing wins: it is a deliberate choice, standing near something is not. */
+  syncPrompt() {
+    const target = this.hover || this.near;
+    const text = target && ENTRIES[target.entry]
+      ? `${this.hover ? 'CLICK' : 'E'}  ·  ${ENTRIES[target.entry].title}`
+      : '';
+    if (text === this._promptText) return;
+    this._promptText = text;
+    if (text) this.ui.showPrompt(text); else this.ui.hidePrompt();
   }
 
   /* ------------------------------ interaction --------------------------- */
@@ -424,13 +442,72 @@ export class Game {
   act(canRoll = false) {
     if (this.ui.mapOpen()) return this.ui.closeMap();
     if (this.ui.stack.length) return;      // handled on the keydown path
-    if (this.ui.advance()) return;
-    // The cat trails you everywhere and sits inside interaction range, so it
-    // would otherwise be the target of every single press. Space treats it as
-    // scenery and rolls instead; E still talks to it.
-    const onlyTheCat = this.near === this.companion;
-    if (this.near && !(canRoll && onlyTheCat)) return this.interact(this.near);
-    if (canRoll) this.requestDash();
+    if (this.ui.advance()) return;      // space still pages through dialogue
+    // Space is movement only — it never opens anything. E (and a click) do
+    // all the interacting, which keeps the two jobs from fighting over the
+    // same key.
+    if (canRoll) return this.requestDash();
+    if (this.near) this.interact(this.near);
+  }
+
+  /* --------------------------------- mouse ------------------------------
+     Walking up to things is the intended way round, but a portfolio should
+     not require anyone to learn a control scheme first. Clicking an object
+     does the same as pressing E on it.
+     ---------------------------------------------------------------------- */
+
+  bindPointer() {
+    const toWorld = (ev) => {
+      const r = this.canvas.getBoundingClientRect();
+      return {
+        x: ((ev.clientX - r.left) / r.width) * VIEW.w + this.cam.ox,
+        y: ((ev.clientY - r.top) / r.height) * VIEW.h + this.cam.oy,
+      };
+    };
+
+    this.canvas.addEventListener('mousemove', (ev) => {
+      if (this.ui.busy) { this.hover = null; return; }
+      const w = toWorld(ev);
+      this.hover = this.pick(w.x, w.y);
+      this.canvas.style.cursor = this.hover ? 'pointer' : '';
+      this.syncPrompt();
+    });
+
+    this.canvas.addEventListener('mouseleave', () => {
+      this.hover = null;
+      this.canvas.style.cursor = '';
+    });
+
+    this.canvas.addEventListener('click', (ev) => {
+      if (this.ui.busy) return;
+      const w = toWorld(ev);
+      const hit = this.pick(w.x, w.y);
+      if (!hit) return;
+      this.canvas.focus();
+      this.interact(hit);
+    });
+  }
+
+  /** Which interactable, if any, is under this world-space point. */
+  pick(wx, wy) {
+    let best = null, bestD = Infinity;
+    for (const o of this.room.objects) {
+      if (o.entry === 'guide' && this.companion.active) continue;
+      // A generous box: sprites stand well above the tile they occupy.
+      const left = o.x * TILE - 4, right = o.x * TILE + TILE + 4;
+      const bottom = (o.y + 1) * TILE + 6, top = bottom - 36;
+      if (wx < left || wx > right || wy < top || wy > bottom) continue;
+      const d = Math.hypot(o.x * TILE + TILE / 2 - wx, bottom - 10 - wy);
+      if (d < bestD) { bestD = d; best = o; }
+    }
+    if (!best && this.companion.active) {
+      const c = this.companion;
+      if (Math.abs(wx - c.x) < 11 && wy > c.y - 22 && wy < c.y + 8) {
+        c.entry = 'guide';
+        best = c;
+      }
+    }
+    return best;
   }
 
   /** Roll now if the cooldown allows, in whatever direction is held. */
@@ -589,7 +666,7 @@ export class Game {
 
   drawCompanion(c, ox, oy) {
     const k = this.companion;
-    const near = this.near === k;
+    const near = this.near === k || this.hover === k;
     const frame = Math.floor(Math.abs(k.hop)) % 2;
     const base = frame ? 'cat_1' : 'cat_0';
     const art = k.flip ? spriteFlipped(base, '#ff9a3c') : sprite(base, '#ff9a3c');
@@ -765,7 +842,7 @@ export class Game {
 
     if (!e.isDecor) {
       const got = save.has(e.entry);
-      const isNear = this.near === e;
+      const isNear = this.near === e || this.hover === e;
       if (got) {
         // A ring on the floor marks what you have already read, without
         // sticking a badge on the artwork.
