@@ -34,8 +34,11 @@ correctly in a screen reader, and prints to a clean document.
   image in the repository is the social preview card. The tilemaps come from a
   compact room spec and a seeded PRNG, so the scatter is random-looking but
   identical for everyone.
-- Movement has momentum: hold <kbd>Shift</kbd> to run, <kbd>Z</kbd> to roll.
-  Rolling into a crate goes straight through it.
+- Movement has momentum. Hold <kbd>Shift</kbd> to run; <kbd>Space</kbd>
+  rolls when nothing is in reach. Chained rolls average about 1.45x running
+  speed, because you keep your momentum coming out of each one — a roll that
+  left you slower than walking was a roll nobody would ever use. Rolling into
+  a crate goes straight through it.
 - Music and sound effects are synthesised live with the Web Audio API.
 - No analytics, no cookies, no tracking. Progress is saved in `localStorage`
   and goes nowhere else.

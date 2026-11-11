@@ -14,14 +14,19 @@ import { save } from './save.js';
 /* Movement feel. The character accelerates and slides to a stop rather than
    snapping between stopped and full speed, which is most of why walking
    around feels like anything at all. */
-const WALK    = 98;        // px/s top speed
-const RUN     = 172;        // px/s while sprinting
-const ACCEL   = 900;       // px/s² toward the stick direction
-const FRICTION= 1150;      // px/s² when nothing is held
-const DASH_V  = 330;       // px/s burst
-const DASH_T  = 0.19;      // seconds of burst
-const DASH_CD = 0.34;      // seconds before you can roll again
-const REACH   = 30;        // interaction radius, px
+const WALK     = 98;       // px/s top speed
+const RUN      = 172;      // px/s while sprinting
+const ACCEL    = 900;      // px/s² toward the stick direction
+const FRICTION = 1150;     // px/s² when nothing is held
+/* The roll has to be worth doing. Tuned so that chaining rolls averages
+   about 1.4x sprinting: a long burst, a short cooldown, and — most
+   importantly — you keep your momentum coming out of it instead of being
+   dumped below walking pace. */
+const DASH_V    = 400;     // px/s at the start of the burst
+const DASH_T    = 0.22;    // seconds of burst
+const DASH_TAIL = 0.65;    // speed still carried at the end of the burst
+const DASH_CD   = 0.16;    // seconds before you can roll again
+const REACH     = 30;      // interaction radius, px
 
 export class Game {
   constructor(canvas) {
@@ -197,10 +202,18 @@ export class Game {
 
     if (p.dash > 0) {
       p.dash -= dt;
-      const ease = Math.max(0.25, p.dash / DASH_T);     // fast, then settle
+      const ease = Math.max(DASH_TAIL, p.dash / DASH_T);   // fast, then settle
       p.vx = p.dashX * DASH_V * ease;
       p.vy = p.dashY * DASH_V * ease;
-      if (p.dash <= 0) { p.dashCd = DASH_CD; p.vx *= 0.35; p.vy *= 0.35; }
+      if (p.dash <= 0) {
+        p.dashCd = DASH_CD;
+        // Hand the momentum over to the run rather than stopping dead; the
+        // excess above running speed bleeds off over the next few frames.
+        const sp = Math.hypot(p.vx, p.vy) || 1;
+        const keep = Math.min(sp, RUN * 1.25);
+        p.vx = (p.vx / sp) * keep;
+        p.vy = (p.vy / sp) * keep;
+      }
       // afterimages
       this._ghostT = (this._ghostT || 0) + dt;
       if (this._ghostT > 0.028) {
@@ -214,8 +227,13 @@ export class Game {
         if (!save.earned('firststep')) this.achievement('firststep');
         p.vx += dx * ACCEL * dt;
         p.vy += dy * ACCEL * dt;
+        // Bleed anything above the current top speed instead of clipping it,
+        // so a roll glides out into a run rather than hitting a wall.
         const sp = Math.hypot(p.vx, p.vy);
-        if (sp > top) { p.vx = (p.vx / sp) * top; p.vy = (p.vy / sp) * top; }
+        if (sp > top) {
+          const f = (sp - Math.min(sp - top, FRICTION * 0.9 * dt)) / sp;
+          p.vx *= f; p.vy *= f;
+        }
       } else {
         const sp = Math.hypot(p.vx, p.vy);
         if (sp > 0) {
@@ -286,9 +304,9 @@ export class Game {
     p.dashX = dx; p.dashY = dy;
     p.dash = DASH_T;
     this.ghosts.length = 0;
-    this.cam.shake = 2.2;
+    this.cam.shake = 2.6;
     this.sound.blip(300, 0.07, 'triangle', 0.08);
-    this.fx.burst(p.x, p.y + 4, '#cfc3e6', 7, 34, 0.3);
+    this.fx.burst(p.x, p.y + 4, '#cfc3e6', 9, 44, 0.32);
     if (!save.earned('roll')) this.achievement('roll');
   }
 
