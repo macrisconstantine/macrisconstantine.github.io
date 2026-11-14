@@ -1,65 +1,62 @@
 /* =========================================================================
-   taxi.js — a playable homage to Taxi Cat, his published Android game.
+   taxi.js — a browser version of Taxi Cat, drawn with the game's own art.
 
-   The real one is on the Google Play Store. This is a small tribute that
-   runs inside the cabinet so the mechanic is in your hands immediately.
+   The sprites are the originals from the Android project: the cat's run
+   cycle in each skin, the taxis, and the explosion. The real game is on
+   Google Play; this is the same idea in a cabinet.
    ========================================================================= */
 
-import { sprite, drawText } from './sprites.js';
+import { drawText } from './sprites.js';
 import { save } from './save.js';
 
-const W = 180, H = 280;
-const LANES = [30, 65, 100, 135];
+const W = 360, H = 600;
+const LANES = [54, 138, 222, 306];
+const SHEET = 'assets/media/taxicat-sprites.png';
+const SKINS = ['Orange', 'Gold', 'Pink', 'White', 'Neon'];
+const CAT = { w: 33, h: 66 }, TAXI = { w: 56, h: 96, y: 330, n: 8 }, BOOM = { s: 128, y: 426, n: 6 };
+const SCALE = 0.86;
 
-export class TaxiGame {
-  constructor(game) { this.game = game; this.raf = null; }
+let sheet = null;
+function loadSheet() {
+  if (!sheet) { sheet = new Image(); sheet.src = SHEET; }
+  return sheet;
+}
 
-  open() {
-    const html = `
-      <header class="card-head">
-        <div><h2>Taxi Cat</h2><p class="sub">dodge the traffic · ← → or A D · the real one is on Google Play</p></div>
-        <button class="x" data-close aria-label="Close">×</button>
-      </header>
-      <div class="arcadebox">
-        <canvas id="taxi" width="${W}" height="${H}" aria-label="Taxi Cat minigame"></canvas>
-        <div class="arcade-side">
-          <div class="score-block"><span class="sl">score</span><span class="sv" id="taxi-score">0</span></div>
-          <div class="score-block"><span class="sl">best</span><span class="sv" id="taxi-best">${save.taxiBest}</span></div>
-          <p class="arcade-help">Press <kbd>←</kbd> <kbd>→</kbd> to change lane.<br>Tap the left or right half on a phone.</p>
-          <a class="btn store" href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener noreferrer">Get the real one ↗</a>
-          <a class="btn repo" href="https://github.com/macrisconstantine/taxi-cat-android-game" target="_blank" rel="noopener noreferrer">Source ↗</a>
-        </div>
-      </div>
-      <p class="screen-note">A published game, live and free on Google Play since 2023 — Java, Android Studio, character customisation, persistent leaderboard, and the whole signing-and-store-review gauntlet behind it.</p>`;
-
-    const body = this.game.ui.openModal(html, 'arcade');
+class TaxiCat {
+  constructor(ui, body) {
+    this.ui = ui;
     this.canvas = body.querySelector('#taxi');
     this.ctx = this.canvas.getContext('2d');
-    this.ctx.imageSmoothingEnabled = false;
     this.scoreEl = body.querySelector('#taxi-score');
     this.bestEl = body.querySelector('#taxi-best');
-    this.catArt = sprite('cat_0', '#ff9a3c');
-    this.catArt2 = sprite('cat_1', '#ff9a3c');
+    this.img = loadSheet();
+    this.skin = Math.min(save.get('taxiSkin') || 0, SKINS.length - 1);
+    this.reset();
 
-    this.keys = new Set();
-    this._kd = (e) => {
-      if (['ArrowLeft', 'KeyA'].includes(e.code)) { this.move(-1); e.preventDefault(); }
-      if (['ArrowRight', 'KeyD'].includes(e.code)) { this.move(1); e.preventDefault(); }
-      if (e.code === 'Space' || e.code === 'Enter') { if (this.dead) this.reset(); e.preventDefault(); }
+    this.onKey = (e) => {
+      if (e.code === 'ArrowLeft' || e.code === 'KeyA') { this.move(-1); e.preventDefault(); }
+      else if (e.code === 'ArrowRight' || e.code === 'KeyD') { this.move(1); e.preventDefault(); }
+      else if ((e.code === 'Space' || e.code === 'Enter') && this.dead && !e.target.closest('button, a')) { this.reset(); e.preventDefault(); }
     };
-    window.addEventListener('keydown', this._kd);
+    window.addEventListener('keydown', this.onKey);
 
     const tap = (e) => {
+      e.preventDefault();
+      if (this.dead) { if (this.deadFor > 0.5) this.reset(); return; }
       const r = this.canvas.getBoundingClientRect();
       const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      if (this.dead) { this.reset(); return; }
       this.move(x < r.width / 2 ? -1 : 1);
-      e.preventDefault();
     };
     this.canvas.addEventListener('touchstart', tap, { passive: false });
     this.canvas.addEventListener('mousedown', tap);
 
-    this.reset();
+    body.querySelectorAll('.skin').forEach((b, i) => {
+      b.addEventListener('click', () => {
+        this.skin = i; save.set('taxiSkin', i);
+        body.querySelectorAll('.skin').forEach((o, j) => o.classList.toggle('is-on', j === i));
+      });
+    });
+
     this.last = performance.now();
     const loop = (t) => {
       const dt = Math.max(0, Math.min(0.05, (t - this.last) / 1000));
@@ -72,116 +69,132 @@ export class TaxiGame {
   }
 
   stop() {
-    if (this.raf) cancelAnimationFrame(this.raf);
-    this.raf = null;
-    window.removeEventListener('keydown', this._kd);
+    cancelAnimationFrame(this.raf);
+    window.removeEventListener('keydown', this.onKey);
   }
 
   reset() {
-    this.lane = 1;
-    this.x = LANES[1];
-    this.cars = [];
-    this.score = 0;
-    this.speed = 90;
-    this.spawn = 0;
-    this.dead = false;
-    this.t = 0;
-    this.road = 0;
+    this.lane = 1; this.x = LANES[1];
+    this.cars = []; this.score = 0; this.spawn = 0.4;
+    this.dead = false; this.deadFor = 0; this.t = 0; this.road = 0;
+    if (this.scoreEl) this.scoreEl.textContent = '0';
   }
 
   move(d) {
     if (this.dead) return;
     const n = Math.max(0, Math.min(LANES.length - 1, this.lane + d));
-    if (n !== this.lane) { this.lane = n; this.game.sound.blip(420, 0.04, 'square', 0.07); }
+    if (n !== this.lane) { this.lane = n; this.blip(420, 0.04); }
   }
+
+  blip(f, d) { const g = this.ui.game; if (g) g.sound.blip(f, d, 'square', 0.06); }
 
   tick(dt) {
     this.t += dt;
-    if (this.dead) return;
-
-    this.x += (LANES[this.lane] - this.x) * Math.min(1, dt * 14);
-    this.road = (this.road + this.speed * dt) % 32;
-    this.speed = 90 + Math.min(170, this.score * 3.2);
+    if (this.dead) { this.deadFor += dt; return; }
+    const speed = 210 + Math.min(330, this.score * 0.42);
+    this.x += (LANES[this.lane] - this.x) * Math.min(1, dt * 16);
+    this.road = (this.road + speed * dt) % 64;
 
     this.spawn -= dt;
     if (this.spawn <= 0) {
-      this.spawn = Math.max(0.38, 0.95 - this.score * 0.012);
+      this.spawn = Math.max(0.42, 1.0 - this.score * 0.0012);
       // Never fill every lane: always leave a way through.
       const blocked = new Set();
-      const n = 1 + (Math.random() < 0.45 ? 1 : 0) + (this.score > 24 && Math.random() < 0.3 ? 1 : 0);
-      while (blocked.size < Math.min(n, LANES.length - 1)) blocked.add(Math.floor(Math.random() * LANES.length));
-      for (const l of blocked) this.cars.push({ lane: l, y: -40, scored: false, hue: Math.random() < 0.8 ? 'y' : 'w' });
+      const n = 1 + (Math.random() < 0.4 ? 1 : 0) + (this.score > 400 && Math.random() < 0.3 ? 1 : 0);
+      while (blocked.size < Math.min(n, LANES.length - 1)) blocked.add((Math.random() * LANES.length) | 0);
+      for (const l of blocked) this.cars.push({ lane: l, y: -100, passed: false, kind: Math.random() < 0.6 ? 0 : 1 + ((Math.random() * (TAXI.n - 1)) | 0) });
     }
 
-    const catY = H - 46;
+    const catY = H - 96;
     for (let i = this.cars.length - 1; i >= 0; i--) {
       const c = this.cars[i];
-      c.y += this.speed * dt;
-      if (!c.scored && c.y > catY + 20) {
-        c.scored = true; this.score++;
+      c.y += speed * dt;
+      if (!c.passed && c.y > catY + 56) {
+        c.passed = true;
+        this.score += 10;
         this.scoreEl.textContent = this.score;
-        this.game.sound.blip(700 + Math.min(500, this.score * 8), 0.03, 'square', 0.05);
-        if (this.score === 20 && this.game.achievement) this.game.achievement('taxi');
-        if (this.score === 60 && this.game.achievement) this.game.achievement('taxipro');
+        if (this.score % 50 === 0) this.blip(880, 0.05);
+        if (this.score >= 300) this.ui.award('taxi');
       }
-      if (c.y > H + 50) this.cars.splice(i, 1);
-      // Collision: same lane and overlapping vertically.
-      if (c.lane === this.lane && Math.abs(c.y - catY) < 26 && Math.abs(LANES[c.lane] - this.x) < 14) {
-        this.die();
-      }
+      if (c.y > H + 100) { this.cars.splice(i, 1); continue; }
+      if (Math.abs(LANES[c.lane] - this.x) < 30 && c.y + 70 > catY + 8 && c.y < catY + 46) this.die();
     }
   }
 
   die() {
-    this.dead = true;
-    this.game.sound.bad();
+    this.dead = true; this.deadFor = 0;
+    const g = this.ui.game; if (g) g.sound.bad();
     if (save.setTaxiBest(this.score)) this.bestEl.textContent = this.score;
   }
 
   draw() {
-    const c = this.ctx;
-    c.fillStyle = '#1b1b24'; c.fillRect(0, 0, W, H);
-
-    // kerbs
-    c.fillStyle = '#2c2c3a'; c.fillRect(0, 0, 14, H); c.fillRect(W - 14, 0, 14, H);
-    c.fillStyle = '#44445a'; c.fillRect(12, 0, 2, H); c.fillRect(W - 14, 0, 2, H);
-
-    // lane markings
-    c.fillStyle = '#3e3e52';
+    const c = this.ctx, ready = this.img.complete && this.img.naturalWidth;
+    c.fillStyle = '#17171d'; c.fillRect(0, 0, W, H);
+    c.fillStyle = '#0f0f14'; c.fillRect(0, 0, 10, H); c.fillRect(W - 10, 0, 10, H);
+    c.fillStyle = '#34343f';
     for (let i = 1; i < LANES.length; i++) {
-      const x = (LANES[i - 1] + LANES[i]) / 2 + 8;
-      for (let y = -32 + this.road; y < H; y += 32) c.fillRect(x, y, 2, 16);
+      const x = (LANES[i - 1] + LANES[i]) / 2 - 2;
+      for (let y = -64 + this.road; y < H; y += 64) c.fillRect(x, y, 4, 30);
+    }
+    if (!ready) return;
+    c.imageSmoothingEnabled = true;
+    c.imageSmoothingQuality = 'high';
+
+    const tw = TAXI.w * SCALE, th = TAXI.h * SCALE;
+    for (const car of this.cars) {
+      c.drawImage(this.img, car.kind * TAXI.w, TAXI.y, TAXI.w, TAXI.h, LANES[car.lane] - tw / 2, car.y, tw, th);
     }
 
-    for (const car of this.cars) this.car(LANES[car.lane], car.y, car.hue);
-
-    // the cat
-    const art = (Math.floor(Math.abs(this.t) * 8) % 2 && !this.dead) ? this.catArt2 : this.catArt;
-    c.save();
-    if (this.dead) { c.globalAlpha = 0.5; }
-    c.drawImage(art.canvas, Math.round(this.x) - 2, H - 58, 24, 24);
-    c.restore();
-
-    if (this.dead) {
-      c.fillStyle = 'rgba(12,10,20,0.82)'; c.fillRect(0, 0, W, H);
-      drawText(c, 'FLATTENED', W / 2, H / 2 - 30, '#ff6ec7', 'center', true, 2);
-      drawText(c, 'SCORE ' + this.score, W / 2, H / 2 + 2, '#e8e4d8', 'center', true, 1);
-      drawText(c, 'SPACE OR TAP TO RETRY', W / 2, H / 2 + 24, '#8a86a0', 'center', true, 1);
+    const cw = CAT.w * SCALE, ch = CAT.h * SCALE, catY = H - 96;
+    if (!this.dead) {
+      const f = Math.floor(this.t * 12) % 8;
+      c.drawImage(this.img, f * CAT.w, this.skin * CAT.h, CAT.w, CAT.h, this.x - cw / 2, catY, cw, ch);
+    } else {
+      const f = Math.min(BOOM.n - 1, Math.floor(this.deadFor * 14));
+      if (this.deadFor < 0.5) c.drawImage(this.img, f * BOOM.s, BOOM.y, BOOM.s, BOOM.s, this.x - 64, catY - 36, 128, 128);
+      c.fillStyle = `rgba(14,13,20,${Math.min(0.86, this.deadFor * 2)})`;
+      c.fillRect(0, 0, W, H);
+      c.imageSmoothingEnabled = false;
+      if (this.deadFor > 0.35) {
+        drawText(c, 'GAME', W / 2, H / 2 - 96, '#ff8a4c', 'center', true, 7);
+        drawText(c, 'OVER', W / 2, H / 2 - 40, '#ff8a4c', 'center', true, 7);
+        drawText(c, 'SCORE ' + this.score, W / 2, H / 2 + 36, '#ffffff', 'center', true, 3);
+        if (Math.floor(this.t * 2) % 2) drawText(c, 'SPACE OR TAP TO PLAY AGAIN', W / 2, H / 2 + 86, '#a99bff', 'center', true, 2);
+      }
     }
   }
+}
 
-  /* A taxi, drawn top-down in pixels. */
-  car(x, y, hue) {
-    const c = this.ctx;
-    const body = hue === 'y' ? '#ffd45e' : '#e8e4d8';
-    const dark = hue === 'y' ? '#c99a25' : '#9aa6b5';
-    c.fillStyle = '#141020'; c.fillRect(x - 1, y - 1, 22, 38);
-    c.fillStyle = body;      c.fillRect(x, y, 20, 36);
-    c.fillStyle = dark;      c.fillRect(x, y + 6, 20, 3); c.fillRect(x, y + 27, 20, 3);
-    c.fillStyle = '#2a2a3a'; c.fillRect(x + 3, y + 9, 14, 8); c.fillRect(x + 3, y + 22, 14, 6);
-    c.fillStyle = '#141020'; c.fillRect(x - 2, y + 7, 3, 7); c.fillRect(x + 19, y + 7, 3, 7);
-    c.fillRect(x - 2, y + 24, 3, 7); c.fillRect(x + 19, y + 24, 3, 7);
-    c.fillStyle = '#ffeaa0'; c.fillRect(x + 2, y + 33, 4, 3); c.fillRect(x + 14, y + 33, 4, 3);
-    c.fillStyle = hue === 'y' ? '#141020' : '#ffd45e'; c.fillRect(x + 6, y + 2, 8, 3);
-  }
+export function openArcade(ui) {
+  const skin = Math.min(save.get('taxiSkin') || 0, SKINS.length - 1);
+  const k = 28 / CAT.w;   // thumbnails show exactly one 33 x 66 frame in a 28 x 56 box
+  const body = ui.show('arcade', `
+    <div class="sheet-head">
+      <h2 id="sheet-title">Taxi Cat</h2>
+      <p>A browser version of my Android game, drawn with its original sprites. The real one is free on Google Play.</p>
+    </div>
+    <div class="sheet-body">
+      <div class="arcade">
+        <canvas id="taxi" width="${W}" height="${H}" aria-label="Taxi Cat: dodge the taxis"></canvas>
+        <div class="arcade-side">
+          <div class="score"><span>Score</span><b id="taxi-score">0</b></div>
+          <div class="score"><span>Best</span><b id="taxi-best">${save.get('taxiBest') || 0}</b></div>
+          <div>
+            <p class="arcade-help" style="margin-bottom:8px">Cat</p>
+            <div class="skins">
+              ${SKINS.map((n, i) => `<button type="button" class="skin ${i === skin ? 'is-on' : ''}" title="${n}" aria-label="${n} cat"
+                style="background-image:url(${SHEET});background-size:${768 * k}px ${554 * k}px;background-position:0 ${-i * CAT.h * k}px"></button>`).join('')}
+            </div>
+          </div>
+          <p class="arcade-help"><kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> to change lane.<br>On a phone, tap the left or right half.</p>
+          <p class="e-links" style="margin:0">
+            <a href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener">Google Play</a>
+            <a href="https://github.com/macrisconstantine/taxi-cat-android-game" target="_blank" rel="noopener">Source</a>
+            <a href="#" data-open="taxicat">About the game</a>
+          </p>
+        </div>
+      </div>
+    </div>`);
+  const game = new TaxiCat(ui, body);
+  ui.cleanup = () => game.stop();
 }

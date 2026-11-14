@@ -1,98 +1,95 @@
 # macrisconstantine.github.io
 
-My portfolio. It is a small explorable world — six districts, twenty-nine
-things I actually built — with a plain résumé one keypress away.
+My portfolio: **https://macrisconstantine.github.io**
 
-**Live:** https://macrisconstantine.github.io
+It is a normal portfolio page — work, experience, education — whose hero is a
+small game you can step into. Press **Play** and the page becomes a top-down
+world in which every project on the page is something you can walk up to.
+Several of the games in it run right there in the browser.
 
-## What is in here
+## How it is put together
 
-- **The Arcade** — games, several of them playable in the page. The cabinets
-  are real `<iframe>`s pointing at the real GitHub Pages builds of the real
-  projects, not screenshots.
-- **The Foundry** — production ASP.NET / VB.NET work, with the numbers.
-- **The Observatory** — the honors thesis, the local-LLM companion, OMSCS.
-- **The Terminal** — a working shell. `help`, `ls`, `cat`, `stats`, and a few
-  things that are not in the help text.
-- **The Archive** — all 58 public repositories, searchable.
-- **The Workshop** — locked until you have collected everything.
-
-Press <kbd>R</kbd> at any point for the plain résumé. That version is the
-actual HTML of the page: it works with JavaScript switched off, reads
-correctly in a screen reader, and prints to a clean document.
-
-## How it is built
-
-- Hand-written HTML, CSS and ES modules. **No framework, no build step, no
-  bundler, no dependencies, nothing to install.**
-- The world renders to one `<canvas>` and scales up with nearest-neighbour
-  filtering. The render target changes shape with the window, so a phone in
-  portrait gets a tall view rather than a letterboxed strip.
-- **Every sprite is pixel art authored as text** in `assets/js/sprites.js` and
-  painted to an off-screen canvas at load, with the outlines added
-  programmatically. There are no image assets in the world at all — the only
-  image in the repository is the social preview card. The tilemaps come from a
-  compact room spec and a seeded PRNG, so the scatter is random-looking but
-  identical for everyone.
-- Movement has momentum. Hold <kbd>Shift</kbd> to run; <kbd>Space</kbd>
-  rolls when nothing is in reach. Chained rolls average about 1.45x running
-  speed, because you keep your momentum coming out of each one — a roll that
-  left you slower than walking was a roll nobody would ever use. Rolling into
-  a crate goes straight through it.
-- Music and sound effects are synthesised live with the Web Audio API.
-- No analytics, no cookies, no tracking. Progress is saved in `localStorage`
-  and goes nowhere else.
+- **Hand-written HTML, CSS and JavaScript modules.** No framework, no bundler,
+  no build step; the repository is the site.
+- **The page is the content.** Every project, role and course is an element in
+  `index.html` marked `data-entry`. The page shows them in place; the game
+  looks them up by id and clones them into its panels; the terminal builds its
+  files from the same text. There is one copy of every sentence, so the three
+  views cannot disagree, and the page reads correctly with JavaScript off.
+- **The world is drawn in code.** Sprites are written as text in
+  `assets/js/sprites.js` and painted to off-screen canvases at load. Rooms are
+  small text maps in `assets/js/world.js`; floors and walls are painted once
+  per room from a seeded generator, then lit each frame by cutting pools of
+  light out of a darkness layer.
+- **Whole-pixel scaling.** The canvas is always scaled by a whole number of
+  device pixels, and the amount of world on show adapts to the window instead.
+- **Real media for real projects.** Gameplay captures and screenshots live in
+  `assets/media`. The Taxi Cat cabinet is drawn with the original sprites from
+  the Android game.
+- **Sound is synthesised** with the Web Audio API. Progress is kept in
+  `localStorage`; there is no tracking of any kind.
 
 ## Layout
 
 ```
-index.html              the page, and the full résumé as real markup
-assets/css/style.css
+index.html                 the page, and all of the content
+assets/css/site.css        the portfolio page (and its print stylesheet)
+assets/css/game.css        play mode: HUD, journal, terminal, touch controls
 assets/js/
-  main.js               boot and mode switching
-  game.js               the loop: movement, rendering, interaction
-  engine.js             screen, input, camera, particles, audio
-  world.js              the six districts and the tile generator
-  sprites.js            all pixel art, as text
-  data.js               every piece of content, in one place
-  repos.js              the GitHub repo list, baked in at build time
-  ui.js                 dialogue, cards, the archive, the HUD, the map
-  terminal.js           the shell
-  taxi.js               the Taxi Cat minigame
-  save.js               progress, XP, achievements
+  main.js                  boot, and switching between page and game
+  site.js                  page behaviour: cards, filters, repository list
+  content.js               reads entries from the page; districts; achievements
+  ui.js                    the panel that shows an entry; journal; HUD
+  game.js                  movement, lighting, rendering, interaction
+  engine.js                screen scaling, input, camera, particles, audio
+  world.js                 room maps, themes, floor and wall painting
+  sprites.js               pixel art and the bitmap font, as text
+  terminal.js              the shell
+  taxi.js                  the Taxi Cat cabinet
+  save.js                  progress
+  repos.js                 repository list, baked from the GitHub API
+assets/media/              gameplay captures, screenshots, Taxi Cat sprites
+tests/run.js               regression suite
+tools/headless.py          drives headless Chrome: screenshots, tests
+tools/build_media.py       turns raw captures into assets/media
 ```
 
-`data.js` is the single source of truth: the explorable world and the plain
-résumé render from the same entries, so they cannot drift apart.
+## Running it
 
-## Running it locally
-
-Any static server will do:
+Any static file server will do:
 
 ```bash
-python -m http.server 8099
+python .claude/devserver.py 8099
 ```
 
-Then open http://localhost:8099. There is nothing to build.
+Then open http://localhost:8099. `devserver.py` is `http.server` with caching
+switched off, which is useful while editing.
 
-`.claude/devserver.py` is the same thing with caching disabled, which is
-handy while editing.
+## Tests
 
-## Refreshing the repository list
-
-`assets/js/repos.js` is generated from the GitHub API so the site needs no
-network calls at runtime. To regenerate it:
+The suite runs against the real page in a headless browser, pressing real keys
+and clicking the real canvas, and steps the simulation by hand so that results
+do not depend on frame timing:
 
 ```bash
-curl -s "https://api.github.com/users/macrisconstantine/repos?per_page=100&sort=pushed" -o repos.json
+python tools/headless.py test "http://localhost:8099/?test"
 ```
 
-…then rewrite `assets/js/repos.js` with the fields it uses: `name`, `desc`,
-`lang`, `url`, `home`, `pages`, `stars`, `size`, `created`, `pushed`, `fork`,
-`topics`.
+It needs Chrome or Edge and the `websocket-client` Python package. It checks
+that the page and the world agree about what exists, that every room can be
+walked, and the feel of the controls: walk, run and roll speeds; that Space
+only ever rolls and never opens anything; that E and a click interact; that
+whatever opened a panel also closes it. Opening `/?test` in a normal browser
+runs the same suite and logs to the console (it resets saved progress).
+
+`tools/headless.py shot <url> <file.png>` takes screenshots the same way.
+
+## Printing
+
+Printing the page gives a plain résumé: the stylesheet drops the game, the
+pictures and the navigation and sets the text in reading order.
 
 ## Licence
 
-Code is MIT (see `LICENSE`). The written content, the résumé text and the
-pixel art are © Constantine Macris — please do not lift the copy wholesale
-for your own portfolio.
+Code is MIT (see `LICENSE`). The writing, the screenshots and the game art are
+© Constantine Macris.

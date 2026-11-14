@@ -142,7 +142,7 @@ export const REPOS = [
  },
  {
   "name": "product-landing-page",
-  "desc": "Absolute garbage but minimum requirements to pass the tests for freeCodeCamp Responsive Web Design certification.",
+  "desc": "",
   "lang": "HTML",
   "url": "https://github.com/macrisconstantine/product-landing-page",
   "home": "",

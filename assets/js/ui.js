@@ -1,9 +1,12 @@
 /* =========================================================================
-   ui.js — the DOM layer that sits over the canvas.
-   Dialogue, project cards, the searchable archive, the HUD, toasts, the map.
+   ui.js — the panel ("sheet") that shows an entry, plus the game's HUD.
+
+   The same sheet serves the page and the game: a project card clicked on the
+   page and an arcade cabinet used in the world both end up in openEntry().
+   Nothing in here needs the game to be running.
    ========================================================================= */
 
-import { ENTRIES, LISTS, DISTRICTS, ACHIEVEMENTS, PROFILE } from './data.js';
+import { entry, entries, inDistrict, countable, DISTRICTS, district, ACHIEVEMENTS } from './content.js';
 import { REPOS } from './repos.js';
 import { save } from './save.js';
 
@@ -13,363 +16,352 @@ export const esc = (s) => String(s ?? '')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-/** Tiny inline markdown: **bold**, `code`, *em*. Input is escaped first. */
-export function md(s) {
-  return esc(s)
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const playing = () => document.body.classList.contains('playing');
+
+/** Swap a still for its footage. */
+function playClip(img) {
+  if (!img) return;
+  if (img.dataset.anim) img.src = img.dataset.anim;
+  // A portrait capture: the card shows a landscape still, the panel the footage.
+  if (img.dataset.detail) {
+    img.src = img.dataset.detail;
+    img.removeAttribute('width'); img.removeAttribute('height');
+    img.closest('.e-media').classList.add('e-portrait');
+  }
 }
 
-const REPO_BY_NAME = Object.fromEntries(REPOS.map((r) => [r.name, r]));
+export const ui = {
+  game: null,        // set by the game when it boots
+  kind: null,        // what the sheet is showing, or null when closed
+  current: null,     // id of the entry on show, if any
+  cleanup: null,     // called when the sheet closes (stops the minigame loop)
 
-/* ========================================================================= */
+  get open() { return this.kind !== null; },
 
-export class UI {
-  constructor(game) {
-    this.game = game;
-    this.el = {
-      dialogue:  $('#dialogue'),
-      dName:     $('#dialogue .d-name'),
-      dText:     $('#dialogue .d-text'),
-      dHint:     $('#dialogue .d-hint'),
-      modal:     $('#modal'),
-      modalBody: $('#modal .modal-body'),
-      toasts:    $('#toasts'),
-      hud:       $('#hud'),
-      hudZone:   $('#hud-zone'),
-      hudLevel:  $('#hud-level'),
-      hudBar:    $('#hud-bar span'),
-      hudFrag:   $('#hud-frag'),
-      map:       $('#mapview'),
-      prompt:    $('#prompt'),
-    };
-    this.stack = [];
-    this.typing = null;
-    this.dialogueQueue = [];
-    this.onDialogueEnd = null;
-
-    $('#modal').addEventListener('click', (e) => {
-      if (e.target.id === 'modal' || e.target.closest('[data-close]')) this.closeModal();
+  init() {
+    const d = $('#sheet');
+    // The dialog's own close event arrives a task later, which is too late
+    // for anything pressed in between — so close() tidies up at once, and
+    // this only catches closes the browser starts itself.
+    // By the time it arrives another panel may already be showing, so it
+    // only counts if the dialog really is shut.
+    d.addEventListener('close', () => { if (!d.open) this.closed(); });
+    d.addEventListener('click', (e) => {
+      if (e.target === d || e.target.closest('[data-close]')) { this.close(); return; }
+      const open = e.target.closest('[data-open]');
+      if (open) { e.preventDefault(); this.openEntry(open.dataset.open); return; }
+      const go = e.target.closest('[data-go]');
+      if (go && this.game) { e.preventDefault(); this.close(); this.game.travel(go.dataset.go); return; }
+      if (e.target.closest('[data-play]')) { this.startEmbed(); return; }
+      const clip = e.target.closest('[data-clip]');
+      if (clip) { playClip(clip.parentElement.querySelector('img')); clip.remove(); return; }
+      const emb = e.target.closest('[data-embed-open]');
+      if (emb && this.current) { e.preventDefault(); this.startEmbed(); return; }
+      const mg = e.target.closest('[data-minigame]');
+      if (mg) { e.preventDefault(); this.openArcade(); }
     });
-  }
+    d.addEventListener('cancel', () => { /* Esc: let the dialog close itself */ });
+  },
 
-  get busy() { return this.stack.length > 0 || this.el.dialogue.classList.contains('show'); }
+  /** Put content in the sheet and show it. */
+  show(kind, html) {
+    const d = $('#sheet'), inner = $('#sheet-inner');
+    if (this.cleanup) { this.cleanup(); this.cleanup = null; }
+    inner.innerHTML = '<button class="sheet-x" type="button" data-close aria-label="Close">×</button>' + html;
+    d.dataset.kind = kind;
+    const wasOpen = this.open;
+    this.kind = kind;
+    if (!d.open) d.showModal();
+    inner.scrollTop = 0;
+    if (this.game && !wasOpen) this.game.onSheetOpened(kind);
+    return inner;
+  },
 
-  /* ------------------------------ dialogue ------------------------------ */
+  close() {
+    const d = $('#sheet');
+    if (d.open) d.close();
+    this.closed();
+  },
 
-  say(name, lines, onEnd) {
-    this.dialogueQueue = Array.isArray(lines) ? [...lines] : [lines];
-    this.onDialogueEnd = onEnd || null;
-    this.el.dName.textContent = name;
-    this.el.dialogue.classList.add('show');
-    this.el.dialogue.setAttribute('aria-hidden', 'false');
-    this._next();
-  }
+  /** Tidy up after the sheet has gone. Safe to call twice. */
+  closed() {
+    if (this.kind === null) return;
+    if (this.cleanup) { this.cleanup(); this.cleanup = null; }
+    $('#sheet-inner').innerHTML = '';     // also unloads any embedded build
+    const was = this.kind;
+    this.kind = null; this.current = null;
+    if (this.game) this.game.onSheetClosed(was);
+    if (location.hash.startsWith('#project/')) history.replaceState(null, '', location.pathname + location.search);
+  },
 
-  _next() {
-    if (this.typing) { clearInterval(this.typing); this.typing = null; }
-    const line = this.dialogueQueue.shift();
-    if (line === undefined) {
-      this.el.dialogue.classList.remove('show');
-      this.el.dialogue.setAttribute('aria-hidden', 'true');
-      const cb = this.onDialogueEnd; this.onDialogueEnd = null;
-      if (cb) cb();
-      return;
+  /* ------------------------------- entries ------------------------------ */
+
+  openEntry(id, opts = {}) {
+    const e = entry(id);
+    if (!e) return;
+    this.markRead(id);
+    if (e.kind === 'terminal') return this.openTerminal();
+    if (e.kind === 'minigame' && opts.play) return this.openArcade();
+
+    const node = e.el.cloneNode(true);
+    node.removeAttribute('id');
+    node.className = 'entry';
+    node.querySelectorAll('[id]').forEach((n) => { if (n.tagName !== 'marker') n.removeAttribute('id'); });
+    const title = node.querySelector('.e-title');
+    if (title) { title.id = 'sheet-title'; title.classList.remove('visually-hidden'); }
+    node.querySelectorAll('.e-open').forEach((a) => a.replaceWith(...a.childNodes));
+    node.querySelectorAll('img').forEach((img) => {
+      img.loading = 'eager';
+      if (!img.dataset.anim && !img.dataset.detail) return;
+      // Footage plays straight away, unless the visitor has asked for less
+      // motion — then it waits behind a button.
+      if (reducedMotion()) {
+        img.closest('.e-media').insertAdjacentHTML('beforeend',
+          '<button class="btn play-overlay" type="button" data-clip><svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg> Play clip</button>');
+      } else playClip(img);
+    });
+
+    const media = node.querySelector('.e-media');
+    if (e.embed) {
+      const btn = '<button class="btn btn-primary play-overlay" type="button" data-play>' +
+        '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg> Play here</button>';
+      if (media) media.insertAdjacentHTML('beforeend', btn);
     }
-    const target = md(line);
-    this.el.dText.innerHTML = '';
-    this.el.dHint.textContent = this.dialogueQueue.length ? '▼ more' : '▼';
-    // Type character by character, but skip over HTML tags in one go.
-    let i = 0;
-    this.typing = setInterval(() => {
-      if (i >= target.length) { this._doneTyping(); return; }
-      if (target[i] === '<') { const j = target.indexOf('>', i); i = j < 0 ? target.length : j + 1; }
-      else i++;
-      this.el.dText.innerHTML = target.slice(0, i);
-      if (i % 3 === 0) this.game.sound.step1();
-    }, 14);
-    this._typeTarget = target;
-  }
+    if (e.kind === 'minigame') {
+      const links = node.querySelector('.e-links');
+      if (links && !links.querySelector('[data-minigame]')) {
+        links.insertAdjacentHTML('beforeend', '<a href="#" data-minigame="taxi">Play a browser version</a>');
+      }
+    }
 
-  _doneTyping() { clearInterval(this.typing); this.typing = null; this.el.dText.innerHTML = this._typeTarget; }
+    const inner = this.show('entry', '');
+    inner.appendChild(node);
+    this.current = id;
+    const browser = node.querySelector('[data-repos]');
+    if (browser) mountRepoBrowser(browser);
+    if (opts.play && e.embed) this.startEmbed();
+    else { const b = inner.querySelector('[data-play]'); if (b) b.focus(); }
+    if (!playing()) history.replaceState(null, '', '#project/' + id);
+  },
 
-  /** Called when the player presses the action key while dialogue is open. */
-  advance() {
-    if (this.typing) { this._doneTyping(); return true; }
-    if (this.el.dialogue.classList.contains('show')) { this._next(); return true; }
-    return false;
-  }
+  /** Swap the entry's picture for the live build. */
+  startEmbed() {
+    const e = entry(this.current);
+    const inner = $('#sheet-inner');
+    if (!e || !e.embed || inner.querySelector('.player')) return;
+    const media = inner.querySelector('.e-media');
+    const player = document.createElement('div');
+    player.className = 'player';
+    player.innerHTML = '<div class="player-load">Loading the live build…</div>' +
+      `<iframe src="${esc(e.embed)}" title="${esc(e.title)}" allow="autoplay; fullscreen; gamepad" referrerpolicy="no-referrer"></iframe>`;
+    const note = document.createElement('p');
+    note.className = 'player-note';
+    note.textContent = 'This is the real project, running from its own deployment. Click inside it first — it needs keyboard focus.';
+    if (media) media.replaceWith(player, note); else inner.prepend(player, note);
+    const frame = player.querySelector('iframe');
+    frame.addEventListener('load', () => { const l = player.querySelector('.player-load'); if (l) l.remove(); });
+    inner.scrollTop = 0;
+    this.award('played');
+  },
 
-  dismissDialogue() {
-    if (this.typing) { clearInterval(this.typing); this.typing = null; }
-    this.dialogueQueue = [];
-    this.el.dialogue.classList.remove('show');
-    this.el.dialogue.setAttribute('aria-hidden', 'true');
-    const cb = this.onDialogueEnd; this.onDialogueEnd = null;
-    if (cb) cb();
-  }
+  async openTerminal() {
+    this.markRead('terminal');
+    const { openTerminal } = await import('./terminal.js');
+    openTerminal(this);
+  },
 
-  /* ------------------------------- modals ------------------------------- */
+  async openArcade() {
+    this.markRead('taxicat');
+    const { openArcade } = await import('./taxi.js');
+    openArcade(this);
+  },
 
-  openModal(html, cls = '') {
-    this.el.modalBody.innerHTML = html;
-    this.el.modal.className = 'modal show ' + cls;
-    this.el.modal.setAttribute('aria-hidden', 'false');
-    this.stack.push(cls || 'modal');
-    this.game.input.enabled = false;
-    this.game.sound.open();
-    const first = this.el.modalBody.querySelector('input, button, a');
-    if (first) setTimeout(() => first.focus(), 60);
-    return this.el.modalBody;
-  }
+  /* ------------------------------- progress ----------------------------- */
 
-  closeModal() {
-    if (!this.stack.length) return false;
-    this.stack.pop();
-    this.el.modal.classList.remove('show');
-    this.el.modal.setAttribute('aria-hidden', 'true');
-    this.el.modalBody.innerHTML = '';
-    this.game.input.enabled = true;
-    this.game.sound.close();
-    this.game.canvas.focus();
+  markRead(id) {
+    const e = entry(id);
+    if (!e || !save.mark(id)) return false;
+    if (this.game) this.game.onRead(id);
+    this.award('first');
+    if (e.district && save.district(e.district).done) this.award(e.district);
+    if (save.complete) this.award('all');
+    this.refresh();
     return true;
-  }
+  },
 
-  /* ----------------------------- project card --------------------------- */
+  award(id) {
+    const a = save.award(id);
+    if (!a) return;
+    if (playing()) {
+      this.toast(a.name, a.desc);
+      if (this.game) this.game.sound.fanfare();
+    }
+  },
 
-  cardHTML(entry) {
-    const stats = entry.stats ? `
-      <div class="statgrid">
-        ${entry.stats.map((s) => `
-          <div class="stat">
-            <div class="stat-label">${esc(s.label)}</div>
-            <div class="stat-row"><span class="from">${esc(s.from)}</span><span class="arrow">→</span><span class="to">${esc(s.to)}</span></div>
-          </div>`).join('')}
-      </div>` : '';
+  /* -------------------------------- journal ----------------------------- */
 
-    const body = (entry.body || []).map((p) => `<p>${md(p)}</p>`).join('');
+  openJournal() {
+    const here = this.game && playing() ? this.game.room.id : null;
+    const blocks = DISTRICTS.map((d) => {
+      const list = inDistrict(d.id);
+      const st = save.district(d.id);
+      const locked = d.id === 'workshop' && !save.complete;
+      if (locked) {
+        return `<section class="j-district j-locked" style="--c:${d.color}">
+          <header><h3>${esc(d.name)}</h3><span>locked</span></header>
+          <p class="j-sub">Opens when you have read everything else — ${save.total - save.count} to go.</p>
+        </section>`;
+      }
+      const rows = list.map((e) => `
+        <button type="button" class="j-entry ${save.has(e.id) ? 'is-read' : ''}" data-open="${esc(e.id)}"><i></i>${esc(e.title)}</button>`).join('');
+      const go = playing()
+        ? `<button type="button" class="j-go" data-go="${esc(d.id)}" ${here === d.id ? 'disabled' : ''}>${here === d.id ? 'You are here' : 'Travel here'}</button>`
+        : '';
+      return `<section class="j-district" style="--c:${d.color}">
+        <header><h3>${esc(d.name)}</h3><span>${st.got}/${st.total}</span></header>
+        <p class="j-sub">${esc(d.sub)}</p>
+        <div class="j-entries">${rows}</div>${go}
+      </section>`;
+    }).join('');
 
-    const links = entry.links ? `
-      <div class="links">
-        ${entry.links.map((l) => `<a class="btn ${esc(l.kind)}" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)}<span class="ext">↗</span></a>`).join('')}
-      </div>` : '';
+    const ach = ACHIEVEMENTS.map((a) =>
+      `<li class="${save.earned(a.id) ? 'got' : ''}" title="${esc(a.desc)}">${esc(a.name)}</li>`).join('');
 
-    const tags = entry.tags ? `<div class="tags">${entry.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : '';
-
-    return `
-      <header class="card-head">
-        <div>
-          <h2>${esc(entry.title)}</h2>
-          <p class="sub">${esc(entry.sub || '')}</p>
-        </div>
-        <button class="x" data-close aria-label="Close">×</button>
-      </header>
-      ${stats}
-      <div class="prose">${body}</div>
-      ${links}
-      ${tags}`;
-  }
-
-  openCard(entry) { this.openModal(this.cardHTML(entry), 'card'); }
-
-  /* ------------------------- the searchable archive --------------------- */
-
-  openList(entry) {
-    const names = entry.listKey === 'all' ? REPOS.map((r) => r.name) : (LISTS[entry.listKey] || []);
-    const items = names.map((n) => REPO_BY_NAME[n]).filter(Boolean);
-    const langs = [...new Set(items.map((r) => r.lang).filter(Boolean))].sort();
-
-    const html = `
-      <header class="card-head">
-        <div>
-          <h2>${esc(entry.title)}</h2>
-          <p class="sub">${esc(entry.sub || '')}</p>
-        </div>
-        <button class="x" data-close aria-label="Close">×</button>
-      </header>
-      <div class="prose">${(entry.body || []).map((p) => `<p>${md(p)}</p>`).join('')}</div>
-      <div class="listctl">
-        <input type="search" id="repo-q" placeholder="Search ${items.length} repositories…" aria-label="Search repositories" autocomplete="off">
-        <select id="repo-lang" aria-label="Filter by language">
-          <option value="">All languages</option>
-          ${langs.map((l) => `<option value="${esc(l)}">${esc(l)}</option>`).join('')}
-        </select>
+    const pct = save.total ? Math.round((save.count / save.total) * 100) : 0;
+    this.show('journal', `
+      <div class="sheet-head">
+        <h2 id="sheet-title">Journal</h2>
+        <p>Everything in the world, by district. Open any entry from here, or travel straight to it.</p>
+        <div class="journal-progress"><span>${save.count} of ${save.total} read</span><div class="meter"><i style="width:${pct}%"></i></div><span>${pct}%</span></div>
       </div>
-      <div class="repolist" id="repo-list"></div>`;
-
-    const body = this.openModal(html, 'list');
-    const listEl = $('#repo-list', body);
-    const q = $('#repo-q', body), lang = $('#repo-lang', body);
-
-    const render = () => {
-      const term = q.value.trim().toLowerCase();
-      const L = lang.value;
-      const out = items.filter((r) =>
-        (!L || r.lang === L) &&
-        (!term || r.name.toLowerCase().includes(term) || (r.desc || '').toLowerCase().includes(term)));
-      listEl.innerHTML = out.length ? out.map((r) => this.repoRow(r)).join('')
-        : '<p class="empty">Nothing matches that. Even the archive has limits.</p>';
-      $('#repo-count', body) && ($('#repo-count', body).textContent = out.length);
-    };
-    q.addEventListener('input', render);
-    lang.addEventListener('change', render);
-    render();
-  }
-
-  repoRow(r) {
-    const live = r.home || (r.pages ? `https://macrisconstantine.github.io/${r.name}/` : '');
-    return `
-      <article class="repo">
-        <div class="repo-main">
-          <a class="repo-name" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.name)}</a>
-          ${r.desc ? `<p class="repo-desc">${esc(r.desc)}</p>` : ''}
+      <div class="sheet-body">
+        <div class="j-districts">${blocks}</div>
+        <h3 class="label">Achievements</h3>
+        <ul class="j-ach">${ach}</ul>
+        <h3 class="label">Controls</h3>
+        ${CONTROLS}
+        <div class="j-foot">
+          ${playing() ? '<button type="button" class="btn" data-action="sound">Toggle music</button>' : ''}
+          <button type="button" class="btn" data-action="reset">Reset progress</button>
+          <span class="spacer"></span>
+          ${playing() ? '<button type="button" class="btn" data-action="exit">Back to the page</button>' : ''}
+          <button type="button" class="btn btn-primary" data-close>${playing() ? 'Resume' : 'Close'}</button>
         </div>
-        <div class="repo-meta">
-          ${r.lang ? `<span class="lang" data-lang="${esc(r.lang)}">${esc(r.lang)}</span>` : ''}
-          <span class="date">${esc(r.created.slice(0, 7))}</span>
-          ${live ? `<a class="livedot" href="${esc(live)}" target="_blank" rel="noopener noreferrer" title="Live">live ↗</a>` : ''}
-        </div>
-      </article>`;
-  }
+      </div>`);
+  },
 
-  /* --------------------------- playable embed --------------------------- */
-
-  openEmbed(entry) {
-    const html = `
-      <header class="card-head">
-        <div>
-          <h2>${esc(entry.title)}</h2>
-          <p class="sub">${esc(entry.sub || '')}</p>
-        </div>
-        <button class="x" data-close aria-label="Close">×</button>
-      </header>
-      <div class="screen">
-        <div class="screen-load">loading the real build…</div>
-        <iframe src="${esc(entry.embed)}" title="${esc(entry.title)}" allow="autoplay; fullscreen; gamepad"
-                referrerpolicy="no-referrer" loading="eager"></iframe>
+  openHelp() {
+    this.show('help', `
+      <div class="sheet-head">
+        <h2 id="sheet-title">How this works</h2>
+        <p>This is my portfolio as a small world. Each district holds a part of my work; anything glowing can be read.</p>
       </div>
-      <p class="screen-note">This is the actual project running from its own GitHub Pages deployment — not a recording. Click inside first; some builds want the keyboard.</p>
-      <div class="prose compact">${(entry.body || []).map((p) => `<p>${md(p)}</p>`).join('')}</div>
-      ${entry.links ? `<div class="links">${entry.links.map((l) => `<a class="btn ${esc(l.kind)}" href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.label)}<span class="ext">↗</span></a>`).join('')}</div>` : ''}
-      ${entry.tags ? `<div class="tags">${entry.tags.map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}`;
+      <div class="sheet-body">
+        ${CONTROLS}
+        <h3 class="label">Districts</h3>
+        <div class="j-help">
+          ${DISTRICTS.filter((d) => d.id !== 'hub' && d.id !== 'workshop').map((d) =>
+            `<span><b style="color:${d.color}">${esc(d.name)}</b> ${esc(d.sub.toLowerCase())}</span>`).join('')}
+        </div>
+        <div class="j-foot">
+          <button type="button" class="btn" data-action="journal">Open the journal</button>
+          <span class="spacer"></span>
+          <button type="button" class="btn btn-primary" data-close>Got it</button>
+        </div>
+      </div>`);
+  },
 
-    const body = this.openModal(html, 'embed');
-    const fr = body.querySelector('iframe');
-    fr.addEventListener('load', () => { const l = body.querySelector('.screen-load'); if (l) l.remove(); });
-  }
+  /* ---------------------------------- HUD ------------------------------- */
 
-  /* -------------------------------- toasts ------------------------------ */
+  setZone(id) {
+    const d = district(id);
+    if (!d) return;
+    const z = $('#hud-zone');
+    z.textContent = d.name; z.style.color = d.color;
+    const b = $('#zone-banner');
+    b.querySelector('b').textContent = d.name;
+    b.querySelector('b').style.color = d.color;
+    b.querySelector('span').textContent = d.sub;
+    b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    this.zone = id;
+    this.refresh();
+  },
 
-  toast(title, desc, kind = 'ach') {
+  refresh() {
+    const c = $('#hud-count');
+    if (!c) return;
+    const st = this.zone ? save.district(this.zone) : null;
+    c.innerHTML = (st && st.total ? `<i>${st.got}/${st.total} here · </i>` : '') + `${save.count}/${save.total}`;
+  },
+
+  prompt(key, text) {
+    const p = $('#prompt');
+    if (!text) { p.classList.remove('show'); return; }
+    p.innerHTML = `<kbd>${esc(key)}</kbd>${esc(text)}`;
+    p.classList.add('show');
+  },
+
+  toast(title, desc = '') {
+    const host = $('#toasts');
     const el = document.createElement('div');
-    el.className = 'toast ' + kind;
-    el.innerHTML = `<div class="t-title">${esc(title)}</div><div class="t-desc">${esc(desc)}</div>`;
-    this.el.toasts.appendChild(el);
+    el.className = 'toast';
+    el.innerHTML = `<b>${esc(title)}</b>${desc ? `<span>${esc(desc)}</span>` : ''}`;
+    host.appendChild(el);
     requestAnimationFrame(() => el.classList.add('in'));
     setTimeout(() => { el.classList.remove('in'); setTimeout(() => el.remove(), 400); }, 4200);
-  }
+  },
 
-  /* --------------------------------- HUD -------------------------------- */
+  hideHints() { const h = $('#hints'); if (h) h.classList.add('gone'); },
+};
 
-  setZone(name, color) {
-    this.el.hudZone.textContent = name;
-    this.el.hudZone.style.color = color;
-    const b = document.getElementById('zone-banner');
-    b.textContent = name;
-    b.style.color = color;
-    b.classList.remove('show');
-    void b.offsetWidth;
-    b.classList.add('show');
-  }
+const CONTROLS = `
+  <div class="j-help">
+    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+    <span><kbd>Shift</kbd> run</span>
+    <span><kbd>Space</kbd> roll</span>
+    <span><kbd>E</kbd> or click: interact</span>
+    <span><kbd>J</kbd> or <kbd>Esc</kbd> journal</span>
+    <span><kbd>Esc</kbd> closes any panel</span>
+  </div>`;
 
-  refreshHUD() {
-    const p = save.levelProgress;
-    this.el.hudLevel.textContent = 'LV ' + save.level;
-    this.el.hudBar.style.width = Math.round((p.into / p.need) * 100) + '%';
-    this.el.hudFrag.textContent = `${save.count}/${save.total}`;
-    const pct = document.getElementById('hud-pct');
-    if (pct) pct.textContent = save.percent + '%';
-  }
+/* -------------------------------------------------------------------------
+   The searchable list of every repository. Used on the page and, cloned,
+   inside the sheet — so it is mounted onto whichever copy needs it.
+   ------------------------------------------------------------------------- */
 
-  showPrompt(text) {
-    this.el.prompt.textContent = text;
-    this.el.prompt.classList.add('show');
-  }
-  hidePrompt() { this.el.prompt.classList.remove('show'); }
-
-  /* --------------------------------- map -------------------------------- */
-
-  toggleMap() {
-    const m = this.el.map;
-    if (m.classList.contains('show')) { m.classList.remove('show'); this.game.input.enabled = true; return; }
-    const cur = this.game.room.id;
-    m.innerHTML = `
-      <div class="mapcard">
-        <h2>The Overworld</h2>
-        <p class="sub">${save.count} of ${save.total} fragments · ${save.percent}% complete</p>
-        <div class="mapgrid">
-          ${DISTRICTS.map((d) => {
-            const st = save.district(d.id);
-            const locked = d.id === 'workshop' && !save.complete;
-            return `
-              <div class="mapzone ${cur === d.id ? 'here' : ''} ${locked ? 'locked' : ''}" style="--c:${d.color}">
-                <div class="mz-name">${esc(locked ? '???' : d.name)}</div>
-                <div class="mz-sub">${esc(locked ? 'collect every fragment' : d.sub)}</div>
-                ${st.total ? `<div class="mz-bar"><span style="width:${(st.got / st.total) * 100}%"></span></div>
-                <div class="mz-count">${st.got}/${st.total}</div>` : ''}
-                ${cur === d.id ? '<div class="mz-here">you are here</div>' : ''}
-              </div>`;
-          }).join('')}
-        </div>
-        <h3>Achievements <span class="muted">${save.achievementCount}/${ACHIEVEMENTS.length}</span></h3>
-        <div class="achgrid">
-          ${ACHIEVEMENTS.map((a) => `
-            <div class="ach ${save.earned(a.id) ? 'got' : ''}">
-              <div class="a-name">${esc(save.earned(a.id) ? a.name : '???')}</div>
-              <div class="a-desc">${esc(a.desc)}</div>
-            </div>`).join('')}
-        </div>
-        <p class="mapfoot">M or Esc to close · progress is saved in this browser only
-          · <button class="linkish" id="wipe">reset progress</button></p>
-      </div>`;
-    m.classList.add('show');
-    this.game.input.enabled = false;
-    $('#wipe', m).addEventListener('click', () => {
-      save.reset(); this.refreshHUD(); this.toggleMap();
-      this.toast('Progress cleared', 'Back to the start.', 'info');
-    });
-  }
-
-  mapOpen() { return this.el.map.classList.contains('show'); }
-  closeMap() { this.el.map.classList.remove('show'); this.game.input.enabled = true; }
-
-  /* ------------------------------- helpers ------------------------------ */
-
-  intro() {
-    const html = `
-      <div class="intro">
-        <p class="eyebrow">${esc(PROFILE.location)}</p>
-        <h1>${esc(PROFILE.name)}</h1>
-        <p class="role">${esc(PROFILE.title)}</p>
-        <p class="lede">${esc(PROFILE.blurb)}</p>
-        <div class="introgrid">
-          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> <span>move</span></div>
-          <div><kbd>Shift</kbd> <span>run</span></div>
-          <div><kbd>Space</kbd> <span>roll</span></div>
-          <div><kbd>E</kbd> <span>interact, or click</span></div>
-          <div><kbd>M</kbd> <span>map</span></div>
-          <div><kbd>R</kbd> <span>plain résumé</span></div>
-        </div>
-        <p class="note">Six districts, ${save.total} things he actually built. The arcade cabinets run the real games. The terminal takes real commands.</p>
-        <div class="links">
-          <button class="btn primary" data-close>Enter the world</button>
-          <button class="btn" id="go-resume">Just show me the résumé</button>
-        </div>
-      </div>`;
-    const body = this.openModal(html, 'intro');
-    $('#go-resume', body).addEventListener('click', () => { this.closeModal(); this.game.showResume(); });
-  }
+export function mountRepoBrowser(host) {
+  const langs = [...new Set(REPOS.map((r) => r.lang).filter(Boolean))].sort();
+  host.innerHTML = `
+    <div class="repo-tools">
+      <input type="search" placeholder="Search ${REPOS.length} repositories" aria-label="Search repositories" autocomplete="off">
+      <select aria-label="Filter by language">
+        <option value="">All languages</option>
+        ${langs.map((l) => `<option>${esc(l)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="repo-list"></div>`;
+  const q = $('input', host), lang = $('select', host), list = $('.repo-list', host);
+  const row = (r) => {
+    const live = r.home && !r.home.includes('pythonanywhere') ? r.home
+      : (r.pages ? `https://macrisconstantine.github.io/${r.name}/` : '');
+    return `<div class="repo">
+      <div><a class="repo-name" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.name)}</a>
+        ${r.desc ? `<p class="repo-desc">${esc(r.desc)}</p>` : ''}</div>
+      <div class="repo-meta">${r.lang ? `<span class="lang">${esc(r.lang)}</span>` : ''}
+        <span>${esc(r.created.slice(0, 4))}</span>
+        ${live ? `<a href="${esc(live)}" target="_blank" rel="noopener">live</a>` : ''}</div>
+    </div>`;
+  };
+  const render = () => {
+    const term = q.value.trim().toLowerCase(), L = lang.value;
+    const out = REPOS.filter((r) => (!L || r.lang === L) &&
+      (!term || r.name.toLowerCase().includes(term) || (r.desc || '').toLowerCase().includes(term)));
+    list.innerHTML = out.length ? out.map(row).join('') : '<p class="repo-empty">Nothing matches that.</p>';
+  };
+  q.addEventListener('input', render);
+  lang.addEventListener('change', render);
+  render();
 }
 
-export { ENTRIES, REPO_BY_NAME };
+export { entries, countable };

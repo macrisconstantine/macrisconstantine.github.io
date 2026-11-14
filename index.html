@@ -4,24 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Constantine Macris — Software &amp; Game Developer</title>
-<meta name="description" content="Constantine Macris — software and game developer in Chicago. A published Android game, a Unity RPG whose companion NPC runs on a local 7B language model, an honors thesis on detecting depression from clinical interviews, and production ASP.NET work. Explorable portfolio.">
+<meta name="description" content="Constantine Macris is a software and game developer in Chicago: a published Android game, a Unity RPG with a locally-run language-model companion, and production ASP.NET work. A portfolio you can also play.">
 <meta name="author" content="Constantine Macris">
-<meta name="theme-color" content="#0c0a14">
+<meta name="theme-color" content="#0d0c14">
 <link rel="canonical" href="https://macrisconstantine.github.io/">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="Constantine Macris — Software &amp; Game Developer">
-<meta property="og:description" content="An explorable portfolio. Six districts, thirty things he actually built, and arcade cabinets that run the real games.">
+<meta property="og:description" content="Games, machine-learning projects and production software — in a portfolio you can also play.">
 <meta property="og:url" content="https://macrisconstantine.github.io/">
 <meta property="og:image" content="https://macrisconstantine.github.io/preview.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A pixel-art overworld with paths leading to six districts, captioned Constantine Macris, Software Developer and Game Developer.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://macrisconstantine.github.io/preview.png">
 
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230c0a14'/%3E%3Cpath fill='%234fd98a' d='M4 2h8v3H4zM3 5h10v6H3zM4 11h2v3H4zM10 11h2v3h-2z'/%3E%3Cpath fill='%23f2c9a0' d='M5 3h6v2H5z'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' rx='3' fill='%230d0c14'/%3E%3Cpath fill='%236ee7a0' d='M4 3h8v2H4zM3 5h2v6H3zM4 11h8v2H4zM11 9h2v2h-2zM11 5h2v2h-2z'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/css/site.css">
+<link rel="stylesheet" href="assets/css/game.css">
+<script>document.documentElement.className = 'js';</script>
 
 <script type="application/ld+json">
 {
@@ -30,12 +31,8 @@
   "name": "Constantine Macris",
   "jobTitle": "Software Developer",
   "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
-  "email": "mailto:c.macris@gatech.edu",
   "url": "https://macrisconstantine.github.io/",
-  "sameAs": [
-    "https://github.com/macrisconstantine",
-    "https://www.linkedin.com/in/constantine-macris/"
-  ],
+  "sameAs": ["https://github.com/macrisconstantine", "https://www.linkedin.com/in/constantine-macris/"],
   "alumniOf": [
     { "@type": "CollegeOrUniversity", "name": "Georgia Institute of Technology" },
     { "@type": "CollegeOrUniversity", "name": "Deree — The American College of Greece" }
@@ -46,265 +43,641 @@
 </head>
 
 <body>
-<a class="skip" href="#resume">Skip to the plain résumé</a>
+<a class="skip" href="#work">Skip to work</a>
 
-<!-- ===================== the explorable world ===================== -->
-<div id="world" class="world">
-  <div id="stage" class="stage">
-    <canvas id="screen" tabindex="0" aria-label="An explorable pixel world containing the portfolio. Press R at any time for a plain text résumé."></canvas>
+<header class="site-nav" id="top">
+  <a class="brand" href="#top" aria-label="Constantine Macris, home">
+    <svg class="brand-mark" viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><path d="M4 3h8v2H4zM3 5h2v6H3zM4 11h8v2H4zM11 9h2v2h-2zM11 5h2v2h-2z"/></svg>
+    <span>Constantine Macris</span>
+  </a>
+  <nav aria-label="Sections">
+    <a href="#work">Work</a>
+    <a href="#experience">Experience</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button class="btn btn-play" type="button" data-action="play">
+    <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg> Play
+  </button>
+</header>
 
-    <div id="zone-banner" class="zone-banner" aria-hidden="true"></div>
+<main>
 
-    <div id="hud" class="hud">
-      <div class="hud-left">
-        <span id="hud-zone" class="hud-zone">The Crossroads</span>
-      </div>
-      <div class="hud-right">
-        <span id="hud-level" class="chip">LV 1</span>
-        <span class="bar" id="hud-bar"><span></span></span>
-        <span class="chip frag"><b id="hud-frag">0/30</b> fragments</span>
-        <span class="chip pct" id="hud-pct">0%</span>
-      </div>
+<!-- ================================ hero ================================ -->
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Software &amp; game developer · Chicago</p>
+    <h1>Constantine Macris</h1>
+    <p class="lede">I build games and the systems behind them. I've published an Android game on
+      Google Play, put a locally-run language model inside a Unity RPG, and I'm the lead contributor on
+      two production applications at Gecko Software.</p>
+    <p class="hero-sub">I'm also studying machine learning part-time at Georgia Tech.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" type="button" data-action="play">
+        <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg> Play this page
+      </button>
+      <a class="btn" href="#work">View work</a>
     </div>
-
-    <div id="prompt" class="prompt" aria-hidden="true"></div>
-
-    <div id="dialogue" class="dialogue" aria-hidden="true" aria-live="polite">
-      <div class="d-name"></div>
-      <div class="d-text"></div>
-      <div class="d-hint">▼</div>
-    </div>
-
-    <div id="toasts" class="toasts" aria-live="polite"></div>
-
-    <div class="touch" id="touch" aria-hidden="true">
-      <div class="stick" id="stick"><span class="knob" id="knob"></span></div>
-      <button class="dashbtn" id="dashbtn" aria-label="Roll">↯</button>
-      <button class="actbtn" id="actbtn" aria-label="Interact">E</button>
-    </div>
-  </div>
-
-  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true">
-    <div class="modal-shell"><div class="modal-body"></div></div>
-  </div>
-
-  <div id="mapview" class="mapview" aria-hidden="true"></div>
-</div>
-
-<!-- ===================== persistent controls ===================== -->
-<div class="topbar">
-  <button id="btn-sound" class="tb" aria-pressed="false" title="Music off" aria-label="Toggle music">♪</button>
-  <button id="btn-map" class="tb" title="Map (M)" aria-label="Open map">▦</button>
-  <button id="btn-mode" class="tb wide" title="Switch view (R)">Résumé</button>
-</div>
-
-<!-- ===================== the plain résumé =====================
-     This is real HTML, not generated. It is what a screen reader reads,
-     what a search engine indexes, what prints, and what you get with
-     JavaScript switched off. The world above is layered on top of it.
-================================================================= -->
-<main id="resume" class="resume" aria-hidden="true">
-
-  <header class="r-head">
-    <div class="r-id">
-      <h1>Constantine Macris</h1>
-      <p class="r-title">Software Developer · Game Developer</p>
-      <p class="r-loc">Chicago, Illinois</p>
-    </div>
-    <ul class="r-links">
+    <ul class="hero-links">
+      <li><a href="https://github.com/macrisconstantine" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener">LinkedIn</a></li>
       <li><a href="mailto:c.macris@gatech.edu">c.macris@gatech.edu</a></li>
-      <li><a href="https://github.com/macrisconstantine" target="_blank" rel="noopener noreferrer">github.com/macrisconstantine</a></li>
-      <li><a href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener noreferrer">linkedin.com/in/constantine-macris</a></li>
-      <li><a href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener noreferrer">Taxi Cat on Google Play</a></li>
     </ul>
+  </div>
+
+  <div class="hero-stage">
+    <div class="stage" id="stage-home" data-action="play" role="button" tabindex="0"
+         aria-label="Play the explorable version of this portfolio">
+      <canvas id="screen" aria-hidden="true"></canvas>
+      <div class="stage-hint"><kbd>Click</kbd> to play</div>
+    </div>
+    <p class="stage-caption">This page is also a small game. Everything below is somewhere inside it.</p>
+  </div>
+</section>
+
+<!-- ================================ work ================================ -->
+<section class="section" id="work">
+  <header class="section-head">
+    <h2>Work</h2>
+    <p>Games, machine-learning projects and web work. Anything marked <span class="badge">Playable</span> runs right here in the browser.</p>
   </header>
 
-  <section class="r-summary">
-    <p class="lede">A published Android game. A Unity action RPG whose companion NPC thinks with a 7-billion-parameter
-      language model running on your own machine. An honors thesis that put LSTMs up against local LLMs on clinical
-      interview data. And, by day, lead contributor on two production applications that people depend on to get paid.</p>
-    <p>Most interested in where gameplay systems meet model behaviour — where a system has to feel alive and still be
-      debuggable at 2am.</p>
-    <p class="r-play"><a class="playlink" href="#" id="enter-world">↳ Or explore the interactive version of this portfolio</a></p>
-  </section>
+  <div class="filters" role="group" aria-label="Filter projects" hidden>
+    <button type="button" class="chip is-on" data-filter="all" aria-pressed="true">All</button>
+    <button type="button" class="chip" data-filter="games" aria-pressed="false">Games</button>
+    <button type="button" class="chip" data-filter="ml" aria-pressed="false">Machine learning</button>
+    <button type="button" class="chip" data-filter="web" aria-pressed="false">Web &amp; tools</button>
+  </div>
 
-  <!-- ------------------------------------------------------------- -->
-  <section class="r-sec" id="r-projects">
-    <h2>Selected work</h2>
+  <div class="cards">
 
-    <article class="r-proj">
-      <h3>Pots of Pottimea <span class="r-meta">2D action RPG · Unity, C# · 2022, revisited 2024</span></h3>
-      <p>A Zelda-inspired 2D action RPG built solo in Unity over a single semester. <strong>39 C# scripts</strong> covering
-        movement and animation state machines, enemy AI, health and damage handling, destructibles and projectiles, menus
-        and UI, and NPC navigation through the A* Pathfinding Project.</p>
-      <p class="r-sub">Two years later it became the host body for his capstone — see <em>The companion that thinks</em> below.</p>
-      <p class="r-ln"><a href="https://github.com/macrisconstantine/pots-of-pottimea" target="_blank" rel="noopener noreferrer">Source and build ↗</a></p>
+    <article class="card card-wide" id="pottimea" data-entry data-district="arcade" data-kind="project" data-tags="games">
+      <figure class="e-media">
+        <img src="assets/media/pottimea-poster.webp" data-anim="assets/media/pottimea.webp" width="640" height="360"
+             alt="Gameplay from Pots of Pottimea: a hero in a torch-lit dungeon room, with hearts and a rupee counter along the top." decoding="async">
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Pots of Pottimea</h3>
+        <p class="e-meta">2D action RPG · Unity, C# · 2022</p>
+        <p class="e-summary">A Zelda-inspired action RPG that I designed and built solo in Unity over one semester.</p>
+        <div class="e-more">
+          <ul>
+            <li>39 C# scripts covering movement and animation state, enemy AI, health and damage, destructibles and projectiles, menus and UI.</li>
+            <li>NPC navigation built on the A* Pathfinding Project.</li>
+            <li>I came back to it two years later for my capstone, which gave its companion character a language model.</li>
+          </ul>
+          <p>The repository includes a Windows build. It uses Git LFS, so clone it rather than downloading the ZIP.</p>
+        </div>
+        <ul class="tags"><li>Unity</li><li>C#</li><li>A* Pathfinding</li><li>State machines</li><li>Enemy AI</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/pots-of-pottimea" target="_blank" rel="noopener">Source and build</a></p>
+      </div>
     </article>
 
-    <article class="r-proj">
-      <h3>The companion that thinks <span class="r-meta">Capstone · OpenHermes-2.5-Mistral-7B in Unity · 2024</span></h3>
-      <p>Tore out the companion NPC's dialogue tree and replaced it with a language model running
-        <strong>locally on the player's machine</strong> — no API key, no network call, no per-token bill.
-        OpenHermes-2.5-Mistral-7B quantised to Q4_K_M, served through llamafile and wired into the engine with LLMUnity.</p>
-      <p>A context pipeline feeds live quest and inventory state into the prompt so the companion knows what you are
-        actually carrying and where you actually are; prompt constraints hold it inside the game's lore; and the whole
-        round trip stays fast enough to still feel conversational on consumer hardware. That last constraint drove every
-        decision above.</p>
-      <p class="r-ln"><a href="https://github.com/macrisconstantine/capstone-companion" target="_blank" rel="noopener noreferrer">Source and build ↗</a></p>
+    <article class="card" id="companion" data-entry data-district="observatory" data-kind="project" data-tags="games ml">
+      <figure class="e-media e-diagram">
+        <svg viewBox="0 0 640 400" role="img" aria-label="Diagram: the player's message, together with quest state, inventory and lore rules, is built into a prompt; a local OpenHermes 7B model answers through llamafile and LLMUnity, and the reply appears in the game.">
+          <defs><marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0l10 5-10 5z" class="d-arrowhead"/></marker></defs>
+          <g class="d-tag"><rect x="34" y="40" width="150" height="34" rx="17"/><text x="109" y="62">Quest state</text></g>
+          <g class="d-tag"><rect x="245" y="40" width="150" height="34" rx="17"/><text x="320" y="62">Inventory</text></g>
+          <g class="d-tag"><rect x="456" y="40" width="150" height="34" rx="17"/><text x="531" y="62">Lore rules</text></g>
+          <path class="d-line" marker-end="url(#ar1)" d="M109 74 L260 128"/><path class="d-line" marker-end="url(#ar1)" d="M320 74 L320 128"/><path class="d-line" marker-end="url(#ar1)" d="M531 74 L380 128"/>
+          <g class="d-box"><rect x="34" y="132" width="150" height="56" rx="8"/><text x="109" y="165">Player message</text></g>
+          <g class="d-box d-key"><rect x="230" y="132" width="180" height="56" rx="8"/><text x="320" y="165">Prompt builder</text></g>
+          <path class="d-line" marker-end="url(#ar1)" d="M184 160 L226 160"/>
+          <path class="d-line" marker-end="url(#ar1)" d="M320 188 L320 236"/>
+          <g class="d-box d-model"><rect x="150" y="240" width="340" height="62" rx="8"/><text x="320" y="266">OpenHermes-2.5-Mistral-7B</text><text x="320" y="287" class="d-sub">GGUF · Q4_K_M · runs locally via llamafile</text></g>
+          <path class="d-line" marker-end="url(#ar1)" d="M320 302 L320 334"/>
+          <g class="d-box"><rect x="150" y="338" width="150" height="44" rx="8"/><text x="225" y="365">LLMUnity</text></g>
+          <path class="d-line" marker-end="url(#ar1)" d="M300 360 L336 360"/>
+          <g class="d-box d-key"><rect x="340" y="338" width="150" height="44" rx="8"/><text x="415" y="365">Reply in game</text></g>
+        </svg>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">A companion that runs on a local language model</h3>
+        <p class="e-meta">Capstone · Unity, C#, OpenHermes-2.5-Mistral-7B · 2024</p>
+        <p class="e-summary">For my capstone I replaced the companion's dialogue tree in Pots of Pottimea with a 7B language model that runs on the player's own machine.</p>
+        <div class="e-more">
+          <ul>
+            <li>OpenHermes-2.5-Mistral-7B, quantized to Q4_K_M, runs locally through llamafile and is connected to the game with LLMUnity.</li>
+            <li>A context pipeline feeds the model live quest and inventory state.</li>
+            <li>Prompt constraints hold its answers to the game's lore.</li>
+            <li>Tuned so that a full round trip still feels conversational on consumer hardware.</li>
+          </ul>
+        </div>
+        <ul class="tags"><li>Local LLM inference</li><li>GGUF</li><li>llamafile</li><li>LLMUnity</li><li>Prompt design</li><li>Unity</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/capstone-companion" target="_blank" rel="noopener">Source and build</a></p>
+      </div>
     </article>
 
-    <article class="r-proj">
-      <h3>Taxi Cat <span class="r-meta">Android arcade game · Java, Android SDK · published 2023</span></h3>
-      <p>A published arcade game, live and free on the Google Play Store since 2023. Built in Android Studio with Java and
-        XML layouts: character customisation, a persistent high-score leaderboard, and escalating waves of oncoming taxis.</p>
-      <p>It started from a tutorial foundation and kept going into the part tutorials stop short of — signing, release
-        configuration, writing the store listing, and surviving Play Store review.</p>
-      <p class="r-ln"><a href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener noreferrer">Google Play ↗</a>
-        · <a href="https://github.com/macrisconstantine/taxi-cat-android-game" target="_blank" rel="noopener noreferrer">Source and APK ↗</a></p>
+    <article class="card" id="taxicat" data-entry data-district="arcade" data-kind="minigame" data-tags="games">
+      <figure class="e-media">
+        <img src="assets/media/taxicat-trio.webp" data-detail="assets/media/taxicat.webp" width="960" height="600"
+             alt="Three Taxi Cat screens: the title screen with an orange pixel cat, gameplay with the cat dodging yellow taxis on a dark road, and the game-over screen showing a score of 250." decoding="async" loading="lazy">
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Taxi Cat</h3>
+        <p class="e-meta">Android arcade game · Java, Android SDK · 2023 · on Google Play</p>
+        <p class="e-summary">An arcade game I published on Google Play: you are a cat, and you dodge oncoming taxis for as long as you can.</p>
+        <div class="e-more">
+          <ul>
+            <li>Built in Android Studio with Java and XML layouts. It started from a tutorial foundation and I extended it into a finished game.</li>
+            <li>Character customisation — you choose your cat's name and look — and a persistent high-score leaderboard.</li>
+            <li>I took it through release myself: signing, release configuration, the store listing and Play Store review. It has been free on Google Play since 2023.</li>
+          </ul>
+        </div>
+        <ul class="tags"><li>Android</li><li>Java</li><li>XML layouts</li><li>Play Store release</li></ul>
+        <p class="e-links">
+          <a href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener">Google Play</a>
+          <a href="https://github.com/macrisconstantine/taxi-cat-android-game" target="_blank" rel="noopener">Source and APK</a>
+          <a href="#project/taxicat" data-minigame="taxi" class="js-only">Play a browser version</a>
+        </p>
+      </div>
     </article>
 
-    <article class="r-proj">
-      <h3>Detecting depression from clinical interviews <span class="r-meta">Honors thesis · Python, Keras, Django · 2023–24</span></h3>
-      <p>Obtained access to the restricted <strong>DAIC-WOZ</strong> clinical interview corpus, built the ingest and
-        cleaning pipeline across <strong>189 interviews and 283,000 words</strong>, and trained single- and double-layer
-        LSTM classifiers in Keras over GloVe embeddings to predict PHQ-8 severity.</p>
-      <p>Then benchmarked them against <strong>Mistral 7B Instruct</strong> and <strong>WizardLM 13B</strong> run locally,
-        with prompt design forcing structured output so the comparison was genuinely like for like — and shipped a Django
-        front end for real-time analysis and side-by-side model comparison.</p>
-      <p class="r-ln"><a href="https://github.com/macrisconstantine/depression-detection-thesis" target="_blank" rel="noopener noreferrer">Source ↗</a></p>
+    <article class="card" id="thesis" data-entry data-district="observatory" data-kind="project" data-tags="ml">
+      <figure class="e-media e-diagram">
+        <svg viewBox="0 0 640 400" role="img" aria-label="Diagram: DAIC-WOZ interview transcripts are cleaned, then scored for PHQ-8 severity two ways — by LSTM classifiers over GloVe embeddings, and by locally-run language models with structured-output prompts — and the results are compared.">
+          <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0l10 5-10 5z" class="d-arrowhead"/></marker></defs>
+          <g class="d-box d-key"><rect x="30" y="160" width="150" height="80" rx="8"/><text x="105" y="190">DAIC-WOZ</text><text x="105" y="210" class="d-sub">189 interviews</text><text x="105" y="226" class="d-sub">283k words</text></g>
+          <path class="d-line" marker-end="url(#ar2)" d="M180 200 L214 200"/>
+          <g class="d-box"><rect x="218" y="176" width="110" height="48" rx="8"/><text x="273" y="205">Clean</text></g>
+          <path class="d-line" marker-end="url(#ar2)" d="M328 190 L366 112"/><path class="d-line" marker-end="url(#ar2)" d="M328 210 L366 288"/>
+          <g class="d-box"><rect x="370" y="52" width="240" height="46" rx="8"/><text x="490" y="80">GloVe embeddings</text></g>
+          <path class="d-line" marker-end="url(#ar2)" d="M490 98 L490 116"/>
+          <g class="d-box d-model"><rect x="370" y="120" width="240" height="52" rx="8"/><text x="490" y="143">LSTM · 1 and 2 layers</text><text x="490" y="161" class="d-sub">Keras</text></g>
+          <g class="d-box"><rect x="370" y="232" width="240" height="46" rx="8"/><text x="490" y="260">Structured-output prompts</text></g>
+          <path class="d-line" marker-end="url(#ar2)" d="M490 278 L490 296"/>
+          <g class="d-box d-model"><rect x="370" y="300" width="240" height="52" rx="8"/><text x="490" y="323">Mistral 7B · WizardLM 13B</text><text x="490" y="341" class="d-sub">run locally</text></g>
+          <g class="d-tag"><rect x="405" y="186" width="170" height="32" rx="16"/><text x="490" y="207">PHQ-8 severity, compared</text></g>
+          <path class="d-line" d="M490 172 L490 186"/><path class="d-line" d="M490 232 L490 218"/>
+        </svg>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Detecting depression from clinical interviews</h3>
+        <p class="e-meta">Honors thesis · Python, Keras, Django · 2023–2024</p>
+        <p class="e-summary">My honors thesis: predicting depression severity from interview transcripts, and benchmarking LSTM classifiers against locally-run language models.</p>
+        <div class="e-more">
+          <ul>
+            <li>Obtained access to the restricted DAIC-WOZ clinical corpus and built the ingest and cleaning pipeline for it: 189 interviews, 283k words.</li>
+            <li>Trained single- and double-layer LSTM classifiers in Keras over GloVe embeddings to predict PHQ-8 severity.</li>
+            <li>Benchmarked them against Mistral 7B Instruct and WizardLM 13B run locally, with prompts designed to force structured output.</li>
+            <li>Built a Django interface for real-time analysis and model comparison.</li>
+          </ul>
+        </div>
+        <ul class="tags"><li>Keras</li><li>LSTM</li><li>GloVe</li><li>Local LLMs</li><li>Model evaluation</li><li>Django</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/depression-detection-thesis" target="_blank" rel="noopener">Source</a></p>
+      </div>
     </article>
 
-    <article class="r-proj">
-      <h3>Playable right now <span class="r-meta">live browser builds</span></h3>
-      <p>Several projects are deployed and run in the browser without downloading anything:</p>
-      <ul class="r-list">
-        <li><a href="https://macrisconstantine.github.io/debunking-pseudoscience/" target="_blank" rel="noopener noreferrer">Debunking Physics ↗</a> — Unity WebGL. Fly a ship around a solar system whose physical laws you can edit from the pause menu.</li>
-        <li><a href="https://macrisconstantine.github.io/chess-app/public/index.html" target="_blank" rel="noopener noreferrer">Chess ↗</a> — full legal move generation, including the fiddly parts people skip.</li>
-        <li><a href="https://macrisconstantine.github.io/falling-sand/" target="_blank" rel="noopener noreferrer">Falling Sand ↗</a> — a cellular automaton, and an unusually honest README.</li>
-        <li><a href="https://macrisconstantine.github.io/donut/" target="_blank" rel="noopener noreferrer">Donut ↗</a> — the famous ASCII torus, taken apart and rebuilt readably.</li>
-        <li><a href="https://macrisconstantine.github.io/monty-hall-problem/" target="_blank" rel="noopener noreferrer">Monty Hall ↗</a> — probability demonstrated rather than argued.</li>
-        <li><a href="https://macrisconstantine.pythonanywhere.com/" target="_blank" rel="noopener noreferrer">Game Cave ↗</a> — Django catalogue with role-based access, a recommender and AJAX ratings.</li>
-      </ul>
-    </article>
-  </section>
-
-  <!-- ------------------------------------------------------------- -->
-  <section class="r-sec" id="r-work">
-    <h2>Professional experience</h2>
-
-    <article class="r-job">
-      <h3>Software Developer <span class="r-meta">Gecko Software LLC · Chicago, IL · Nov 2024 – present</span></h3>
-      <p>Lead contributor on two production ASP.NET / VB.NET applications backed by SQL Server.
-        <strong>89 tracked tickets and 223 commits in the year to October 2026 — roughly two thirds of the team's output.</strong></p>
-
-      <h4>Built a quote-to-approval system from nothing</h4>
-      <p>Now ~<strong>10,500 lines</strong> and the largest single feature in the platform: staged requests that survive a
-        half-finished session, duplicate detection both in-form and against the database, live price calculation, Excel
-        price-sheet generation, and email notification on every state change.</p>
-
-      <h4>Rebuilt the price estimator, and scored it honestly</h4>
-      <p>Leave-one-out against 229 hand-priced historical quotes:</p>
-      <table class="r-stats">
-        <thead><tr><th>Measure</th><th>Before</th><th>After</th></tr></thead>
-        <tbody>
-          <tr><td>Coverage</td><td>63%</td><td><strong>97%</strong></td></tr>
-          <tr><td>Median error</td><td>275%</td><td><strong>13%</strong></td></tr>
-          <tr><td>Estimates within 25% of true price</td><td>2%</td><td><strong>71%</strong></td></tr>
-        </tbody>
-      </table>
-      <p>Getting there meant proving the pricing was not a black box: it is a separable multiplicative formula, recoverable
-        per product line. A deterministic calculator beat the machine-learning approach outright, with a calibrated
-        quantile model kept only as a clearly-labelled fallback for the families it could not cover. Knowing when
-        <em>not</em> to reach for a model is the point, and the measurement is what proved it.</p>
-      <p>The rewrite also surfaced a silent failure — a local variable shadowing a same-named function, legal in VB,
-        compiles clean — that had been returning blank estimates for the life of the application domain. Nobody had filed
-        a ticket; they had simply stopped trusting the number.</p>
-
-      <h4>Performance</h4>
-      <p>Cut the slowest screen in daily use from <strong>8.3 s to 1.6 s</strong> with server-side paging, a lightweight
-        count query and in-query sorting. Separately took a home page from <strong>~49 SQL round trips per load to ~16</strong>
-        by caching role lookups and batching into multi-result-set commands. Both came from measuring first and finding the
-        pages were latency-bound rather than query-bound.</p>
+    <article class="card" id="debunking" data-entry data-district="arcade" data-kind="project" data-tags="games"
+             data-embed="https://macrisconstantine.github.io/debunking-pseudoscience/">
+      <figure class="e-media">
+        <img src="assets/media/debunking.webp" width="960" height="520" loading="lazy" decoding="async"
+             alt="Title screen of Debunking Physics in Space: a low-poly spaceship with purple thrusters beside the game's logo.">
+        <span class="badge">Playable</span>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Debunking Physics in Space</h3>
+        <p class="e-meta">Physics sandbox · Unity, WebGL</p>
+        <p class="e-summary">Fly a ship between planets in a universe whose physical laws you can change from the pause menu.</p>
+        <div class="e-more">
+          <ul>
+            <li>My creative final project for the honors course Debunking Pseudoscience.</li>
+            <li>Larger planets pull proportionally harder on the ship, and visiting a planet shows real facts about it.</li>
+            <li>Particle systems for the thrusters, custom ship lighting, and skyboxes with and without constellation names.</li>
+          </ul>
+        </div>
+        <ul class="tags"><li>Unity</li><li>C#</li><li>WebGL</li><li>Physics</li><li>Particle systems</li></ul>
+        <p class="e-links">
+          <a href="https://macrisconstantine.github.io/debunking-pseudoscience/" target="_blank" rel="noopener" data-embed-open>Play in browser</a>
+          <a href="https://github.com/macrisconstantine/debunking-pseudoscience" target="_blank" rel="noopener">Source</a>
+        </p>
+      </div>
     </article>
 
-    <article class="r-job">
-      <h3>Earlier <span class="r-meta">Athens, Greece · 2020–2024</span></h3>
-      <ul class="r-list">
-        <li><strong>Deree — The American College of Greece</strong> — computer labs assistant and technical support;
-          student affairs receptionist and liaison; volunteer orientation leader.</li>
-        <li><strong>Hellenic Ministries</strong> (summers 2020–2023) — warehouse manager. Recruited, trained and
-          coordinated teams of <strong>10 to 35 volunteers</strong> through 20–60 pallets of literature packets in
-          sixteen-day pushes, up to 170,000 packets. Not a software job, and the best evidence here that he can run a
-          plan with other people in it.</li>
-      </ul>
+    <article class="card" id="chess" data-entry data-district="arcade" data-kind="project" data-tags="games web"
+             data-embed="https://macrisconstantine.github.io/chess-app/public/index.html">
+      <figure class="e-media">
+        <img src="assets/media/chess.webp" width="960" height="640" loading="lazy" decoding="async"
+             alt="A chess board in its starting position, with New Game and Undo buttons underneath.">
+        <span class="badge">Playable</span>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Chess</h3>
+        <p class="e-meta">Browser game · JavaScript</p>
+        <p class="e-summary">A chess web app I wrote to learn how chess rules and chess algorithms are programmed.</p>
+        <div class="e-more">
+          <p>The hosted version is the board on its own. Cloned and run locally, the project can also use Stockfish for evaluation, which a static host cannot run.</p>
+        </div>
+        <ul class="tags"><li>JavaScript</li><li>Game rules</li><li>Stockfish</li></ul>
+        <p class="e-links">
+          <a href="https://macrisconstantine.github.io/chess-app/public/index.html" target="_blank" rel="noopener" data-embed-open>Play in browser</a>
+          <a href="https://github.com/macrisconstantine/chess-app" target="_blank" rel="noopener">Source</a>
+        </p>
+      </div>
     </article>
-  </section>
 
-  <!-- ------------------------------------------------------------- -->
-  <section class="r-sec" id="r-edu">
-    <h2>Education</h2>
-    <article class="r-job">
-      <h3>M.S. Computer Science <span class="r-meta">Georgia Institute of Technology (OMSCS) · Jan 2026 – 2029</span></h3>
-      <p>Machine Learning specialisation, part-time alongside full-time work.
-        Completed <strong>CS 7646 Machine Learning for Trading</strong>; currently taking <strong>CS 7641 Machine Learning</strong>.</p>
+    <article class="card" id="falling-sand" data-entry data-district="arcade" data-kind="project" data-tags="games web"
+             data-embed="https://macrisconstantine.github.io/falling-sand/">
+      <figure class="e-media">
+        <img src="assets/media/falling-sand.webp" width="960" height="600" loading="lazy" decoding="async"
+             alt="Orange grains of sand falling and piling into a mound.">
+        <span class="badge">Playable</span>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Falling Sand</h3>
+        <p class="e-meta">Particle simulation · JavaScript, Canvas</p>
+        <p class="e-summary">A falling-sand simulation in plain HTML canvas and JavaScript. Hold the mouse down to pour.</p>
+        <div class="e-more"><p>Inspired by The Coding Train's falling-sand video.</p></div>
+        <ul class="tags"><li>JavaScript</li><li>Canvas</li><li>Simulation</li></ul>
+        <p class="e-links">
+          <a href="https://macrisconstantine.github.io/falling-sand/" target="_blank" rel="noopener" data-embed-open>Play in browser</a>
+          <a href="https://github.com/macrisconstantine/falling-sand" target="_blank" rel="noopener">Source</a>
+        </p>
+      </div>
     </article>
-    <article class="r-job">
-      <h3>B.Sc. Information Technology, Software Development <span class="r-meta">Deree — The American College of Greece · May 2024</span></h3>
-      <p>Validated by The Open University (UK). <strong>GPA 3.95 / 4.00</strong>, honors programme.
-        Honors thesis on detecting depression from clinical interview transcripts. Significant coursework in C programming,
-        internet programming, Android development and object-oriented programming.</p>
+
+    <article class="card" id="donut" data-entry data-district="arcade" data-kind="project" data-tags="web"
+             data-embed="https://macrisconstantine.github.io/donut/">
+      <figure class="e-media">
+        <img src="assets/media/donut.webp" width="704" height="440" loading="lazy" decoding="async"
+             alt="A torus drawn entirely in text characters, shaded by character density.">
+        <span class="badge">Playable</span>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Donut</h3>
+        <p class="e-meta">ASCII rendering · JavaScript</p>
+        <p class="e-summary">The well-known spinning ASCII donut, rebuilt in JavaScript to understand how it works.</p>
+        <ul class="tags"><li>JavaScript</li><li>3D maths</li><li>Rendering</li></ul>
+        <p class="e-links">
+          <a href="https://macrisconstantine.github.io/donut/" target="_blank" rel="noopener" data-embed-open>Run in browser</a>
+          <a href="https://github.com/macrisconstantine/donut" target="_blank" rel="noopener">Source</a>
+        </p>
+      </div>
     </article>
-  </section>
 
-  <!-- ------------------------------------------------------------- -->
-  <section class="r-sec" id="r-skills">
-    <h2>Skills</h2>
-    <dl class="r-skills">
-      <dt>Game development</dt>
-      <dd>Unity (C#) · Android (Java) · 2D gameplay systems · A* Pathfinding Project · animation state machines ·
-        collision &amp; physics · sprite pipelines · build &amp; Play Store deployment</dd>
-      <dt>Machine learning</dt>
-      <dd>Keras · LSTM &amp; sequence models · GloVe embeddings · leave-one-out scoring · calibration and error
-        distributions · quantile regression · local LLM inference (GGUF, llamafile) · LLMUnity · prompt design for
-        structured output</dd>
-      <dt>Languages</dt>
-      <dd>C# · Java · Python · JavaScript · C · SQL · PL/SQL · VB.NET · Bash · HTML · CSS</dd>
-      <dt>Backend &amp; data</dt>
-      <dd>ASP.NET / VB.NET · SQL Server · PostgreSQL · Django · query optimisation · server-side paging · schema design ·
-        ERP integration</dd>
-      <dt>Tools</dt>
-      <dd>Unity · Android Studio · Git (incl. LFS) · Visual Studio · VS Code · PyCharm · IntelliJ · Vim · Photoshop ·
-        Illustrator</dd>
-      <dt>Languages spoken</dt>
-      <dd>English (native) · Greek (proficient)</dd>
-    </dl>
-  </section>
+    <article class="card" id="monty-hall" data-entry data-district="observatory" data-kind="project" data-tags="ml web"
+             data-embed="https://macrisconstantine.github.io/monty-hall-problem/">
+      <figure class="e-media">
+        <img src="assets/media/monty-hall.webp" width="960" height="600" loading="lazy" decoding="async"
+             alt="Three numbered doors with Switch and Stay buttons beneath them.">
+        <span class="badge">Playable</span>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">The Monty Hall problem</h3>
+        <p class="e-meta">Probability simulation · C, JavaScript</p>
+        <p class="e-summary">A C program that runs repeated trials of the Monty Hall problem to show statistically why switching doors wins, with a browser version you can play by hand.</p>
+        <ul class="tags"><li>C</li><li>JavaScript</li><li>Probability</li><li>Simulation</li></ul>
+        <p class="e-links">
+          <a href="https://macrisconstantine.github.io/monty-hall-problem/" target="_blank" rel="noopener" data-embed-open>Try it in browser</a>
+          <a href="https://github.com/macrisconstantine/monty-hall-problem" target="_blank" rel="noopener">Source</a>
+        </p>
+      </div>
+    </article>
 
-  <!-- ------------------------------------------------------------- -->
-  <section class="r-sec" id="r-repos">
-    <h2>All public repositories <span class="r-count" id="r-repo-count"></span></h2>
-    <p>Everything on the account, including the coursework, the throwaways and the one called <code>hello</code> from
-      September 2021. A portfolio that only shows the hits is a sales page; this is the record.</p>
-    <div class="r-repolist" id="r-repolist">
-      <p><a href="https://github.com/macrisconstantine?tab=repositories" target="_blank" rel="noopener noreferrer">Browse all 58 repositories on GitHub ↗</a></p>
+    <article class="card" id="multiplayer" data-entry data-district="arcade" data-kind="project" data-tags="games"
+             data-embed="https://macrisconstantine.github.io/multiplayer-demo/">
+      <figure class="e-media">
+        <img src="assets/media/multiplayer.webp" width="960" height="600" loading="lazy" decoding="async"
+             alt="A game menu offering Singleplayer and Multiplayer beside a low-poly spaceship.">
+        <span class="badge">Playable</span>
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Multiplayer demo</h3>
+        <p class="e-meta">Networking test · Unity, WebGL</p>
+        <p class="e-summary">A Unity project I made to test multiplayer functionality, built on the Debunking Physics game.</p>
+        <ul class="tags"><li>Unity</li><li>Networking</li><li>WebGL</li></ul>
+        <p class="e-links">
+          <a href="https://macrisconstantine.github.io/multiplayer-demo/" target="_blank" rel="noopener" data-embed-open>Open in browser</a>
+          <a href="https://github.com/macrisconstantine/multiplayer-demo" target="_blank" rel="noopener">Source</a>
+        </p>
+      </div>
+    </article>
+
+    <article class="card" id="warehouse" data-entry data-district="vault" data-kind="project" data-tags="web">
+      <figure class="e-media">
+        <img src="assets/media/warehouse.webp" width="960" height="565" loading="lazy" decoding="async"
+             alt="A desktop application window showing a shipment's progress, with counts of packed and unpacked pallets by type.">
+      </figure>
+      <div class="e-body">
+        <h3 class="e-title">Warehouse Manager</h3>
+        <p class="e-meta">Desktop application · Java · 2022</p>
+        <p class="e-summary">A Java desktop application for running a shipment: track which pallets are packed and which are left by type, look pallets up by ID, and view shipment statistics.</p>
+        <ul class="tags"><li>Java</li><li>Desktop UI</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/warehouse-app" target="_blank" rel="noopener">Source</a></p>
+      </div>
+    </article>
+
+    <article class="card card-plain" id="panopticon" data-entry data-district="arcade" data-kind="project" data-tags="games">
+      <div class="e-body">
+        <h3 class="e-title">Panopticon Roulette</h3>
+        <p class="e-meta">One-button game · Unity, C#</p>
+        <p class="e-summary">A game played with the spacebar alone: stop a sweeping spotlight on one axis, then the other, to light a single prison cell. Reveal the hero, not the monster.</p>
+        <div class="e-more"><p>Made in one night as my creative project for the honors course The Society of Spectacle. Its design follows the class discussions of vision and power. The repository has a Windows build.</p></div>
+        <ul class="tags"><li>Unity</li><li>C#</li><li>Game design</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/panopticon-roulette" target="_blank" rel="noopener">Source and build</a></p>
+      </div>
+    </article>
+
+    <article class="card card-plain" id="consciousness" data-entry data-district="observatory" data-kind="project" data-tags="games ml">
+      <div class="e-body">
+        <h3 class="e-title">Consciousness demo</h3>
+        <p class="e-meta">Simulation and minigame · Unity, C#</p>
+        <p class="e-summary">A two-part Unity project for the honors course Human Consciousness: a simulation of a mind trying out possible futures and keeping the ones that succeed, and a two-player game built on the same idea.</p>
+        <ul class="tags"><li>Unity</li><li>C#</li><li>Simulation</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/consciousness-demo" target="_blank" rel="noopener">Source</a></p>
+      </div>
+    </article>
+
+    <article class="card card-plain" id="game-cave" data-entry data-district="vault" data-kind="project" data-tags="web">
+      <div class="e-body">
+        <h3 class="e-title">Game Cave</h3>
+        <p class="e-meta">Web application · Django, Python, Bootstrap · 2023</p>
+        <p class="e-summary">A video-game catalogue with browsing, ratings and a simple recommendation feature, built as my final project for Internet Programming.</p>
+        <div class="e-more">
+          <ul>
+            <li>Guest, user and admin roles, with a custom admin panel for adding categories and titles.</li>
+            <li>Recommendations based on the games and consoles a user has interacted with.</li>
+            <li>An AJAX star-rating system that shows each title's average.</li>
+          </ul>
+        </div>
+        <ul class="tags"><li>Django</li><li>Python</li><li>JavaScript</li><li>Bootstrap</li></ul>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/videogame-community-site" target="_blank" rel="noopener">Source</a></p>
+      </div>
+    </article>
+
+
+  </div>
+</section>
+
+<!-- ============================= experience ============================= -->
+<section class="section" id="experience">
+  <header class="section-head">
+    <h2>Experience</h2>
+  </header>
+
+  <article class="role" id="gecko" data-entry data-district="foundry" data-kind="project">
+    <div class="e-body">
+      <h3 class="e-title">Software Developer, Gecko Software LLC</h3>
+      <p class="e-meta">Chicago, IL · November 2024 – present</p>
+      <p class="e-summary">I'm the lead contributor on two production ASP.NET / VB.NET applications running on SQL Server.</p>
+      <div class="stats">
+        <div class="stat"><b>89</b><span>tracked tickets in the year to October 2026</span></div>
+        <div class="stat"><b>223</b><span>commits over the same year</span></div>
+        <div class="stat"><b>≈ ⅔</b><span>of the team's output</span></div>
+      </div>
     </div>
-  </section>
+  </article>
 
-  <footer class="r-foot">
-    <p><strong>Constantine Macris</strong> · Chicago, IL ·
-      <a href="mailto:c.macris@gatech.edu">c.macris@gatech.edu</a> ·
-      <a href="https://github.com/macrisconstantine" target="_blank" rel="noopener noreferrer">GitHub</a> ·
-      <a href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
-    <p class="r-colophon">Hand-written HTML, CSS and ES modules. No framework, no build step and no dependencies. The
-      explorable version contains no image assets at all — every sprite in it is pixel art stored as text and painted to
-      a canvas at load, and the music is synthesised in the browser. Hosted free on GitHub Pages. No analytics, no
-      cookies, no tracking; progress is saved in your browser and nowhere else.</p>
-  </footer>
+  <div class="tiles">
+    <article class="tile" id="quotes" data-entry data-district="foundry" data-kind="project">
+      <div class="e-body">
+        <h3 class="e-title">Quote-to-approval system</h3>
+        <p class="e-meta">Built from nothing · about 10,500 lines</p>
+        <p class="e-summary">I built the platform's SKU quoting workflow from scratch. It is now the largest single feature in the platform.</p>
+        <div class="e-more">
+          <ul>
+            <li>Staged requests, with duplicate detection both in the form and against the database.</li>
+            <li>Live price calculation as a quote is built.</li>
+            <li>Excel price-sheet generation.</li>
+            <li>Email notification on every state change.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <article class="tile" id="estimator" data-entry data-district="foundry" data-kind="project">
+      <div class="e-body">
+        <h3 class="e-title">Price estimator rebuild</h3>
+        <p class="e-meta">Scored leave-one-out against 229 hand-priced quotes</p>
+        <p class="e-summary">I rebuilt the system's price estimator and measured it against historical quotes that had been priced by hand.</p>
+        <div class="stats stats-delta">
+          <div class="stat"><b><s>63%</s> 97%</b><span>coverage</span></div>
+          <div class="stat"><b><s>275%</s> 13%</b><span>median error</span></div>
+          <div class="stat"><b><s>2%</s> 71%</b><span>of estimates within 25% of the true price</span></div>
+        </div>
+        <div class="e-more">
+          <p>The rewrite also exposed a silent failure: a local variable shadowing a function of the same name had been returning blank estimates for the life of the app domain.</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="tile" id="performance" data-entry data-district="foundry" data-kind="project">
+      <div class="e-body">
+        <h3 class="e-title">Performance work</h3>
+        <p class="e-meta">Measured before and after</p>
+        <p class="e-summary">I cut load times on the screens people use most.</p>
+        <div class="stats stats-delta">
+          <div class="stat"><b><s>8.3 s</s> 1.6 s</b><span>slowest screen in daily use</span></div>
+          <div class="stat"><b><s>≈ 49</s> ≈ 16</b><span>SQL round trips per home-page load</span></div>
+        </div>
+        <div class="e-more">
+          <ul>
+            <li>The slow screen: server-side paging, a lightweight count query and in-query sorting.</li>
+            <li>The home page: cached role lookups, and queries batched into multi-result-set commands.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <article class="role role-earlier" id="earlier" data-entry data-district="archive" data-kind="project">
+    <div class="e-body">
+      <h3 class="e-title">Earlier roles</h3>
+      <p class="e-meta">Athens, Greece · 2020 – 2024</p>
+      <p class="e-summary">While studying I worked at my university and spent four summers managing a volunteer warehouse.</p>
+      <div class="e-more is-open">
+        <ul>
+          <li><strong>Deree — The American College of Greece</strong>, 2021 – 2024. Computer labs assistant and technical support, then liaison and technical assistance in the Office of Student Affairs. Volunteer orientation leader.</li>
+          <li><strong>Hellenic Ministries</strong>, summers 2020 – 2023. Warehouse manager: recruited, trained and coordinated teams of 10 to 35 volunteers packing 20 to 60 pallets of literature packets in 16-day runs.</li>
+        </ul>
+      </div>
+    </div>
+  </article>
+</section>
+
+<!-- =============================== about ================================ -->
+<section class="section" id="about">
+  <header class="section-head">
+    <h2>About</h2>
+  </header>
+
+  <div class="about-grid">
+    <article class="about" id="about-me" data-entry data-district="hub" data-kind="project">
+      <div class="e-body">
+        <h3 class="e-title visually-hidden">About me</h3>
+        <p class="e-summary">I'm a software developer based in Chicago. I studied software development at Deree in Athens, where I started making games in Unity and for Android and wrote an honors thesis on language models.</p>
+        <div class="e-more is-open">
+          <p>Since late 2024 I've worked on production ASP.NET applications at Gecko Software, and since January 2026 I've been studying machine learning part-time at Georgia Tech.</p>
+          <p>The work I like best sits where gameplay systems meet model behaviour.</p>
+          <p>I speak English natively and Greek proficiently. Away from a keyboard: chess, tennis and music.</p>
+        </div>
+      </div>
+    </article>
+
+    <div class="edu">
+      <article class="edu-item" id="gatech" data-entry data-district="observatory" data-kind="project">
+        <div class="e-body">
+          <h3 class="e-title">M.S. Computer Science, Georgia Institute of Technology</h3>
+          <p class="e-meta">OMSCS · January 2026 – 2029 (expected) · Machine Learning specialization</p>
+          <p class="e-summary">Part-time, alongside full-time work. Completed CS 7646 Machine Learning for Trading; currently taking CS 7641 Machine Learning.</p>
+        </div>
+      </article>
+      <article class="edu-item" id="deree" data-entry data-district="archive" data-kind="project">
+        <div class="e-body">
+          <h3 class="e-title">B.Sc. Information Technology, Deree — The American College of Greece</h3>
+          <p class="e-meta">Software Development · May 2024 · validated by The Open University (UK)</p>
+          <p class="e-summary">GPA 3.95 / 4.00, Honors Program. My honors thesis is the depression-detection project above.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <dl class="skills" id="skills">
+    <div><dt>Game development</dt><dd>Unity (C#) · Android (Java) · 2D gameplay systems · navigation and pathfinding · state machines · collision and physics · sprite and animation pipelines · build and Play Store deployment</dd></div>
+    <div><dt>Machine learning</dt><dd>Keras · LSTM and sequence models · model evaluation (leave-one-out scoring, error distributions) · local LLM inference (GGUF, llamafile, LLMUnity) · prompt design for structured output</dd></div>
+    <div><dt>Languages</dt><dd>C# · Java · Python · JavaScript · C · SQL · VB.NET · Bash</dd></div>
+    <div><dt>Web and data</dt><dd>ASP.NET · SQL Server · PostgreSQL · Django · HTML and CSS</dd></div>
+    <div><dt>Tools</dt><dd>Unity · Android Studio · Git (including LFS) · Visual Studio · VS Code · PyCharm · IntelliJ · Photoshop · Illustrator</dd></div>
+  </dl>
+</section>
+
+<!-- ================================ more ================================ -->
+<section class="section" id="more">
+  <header class="section-head">
+    <h2>More on GitHub</h2>
+    <p>Certification projects, small tools, coursework, and the full list of repositories.</p>
+  </header>
+
+  <div class="collections">
+    <article class="collection" id="fcc-db" data-entry data-district="vault" data-kind="list" data-list="fccdb">
+      <div class="e-body">
+        <h3 class="e-title">Relational Database certification</h3>
+        <p class="e-meta">freeCodeCamp · Bash, PostgreSQL, Git</p>
+        <p class="e-summary">The certification's projects, each built entirely in the terminal: schemas designed in psql, scripts written in Bash, everything versioned with Git.</p>
+        <ul class="repo-links" data-list="fccdb"></ul>
+      </div>
+    </article>
+    <article class="collection" id="fcc-web" data-entry data-district="vault" data-kind="list" data-list="fccweb">
+      <div class="e-body">
+        <h3 class="e-title">Web certifications</h3>
+        <p class="e-meta">freeCodeCamp · HTML, CSS, JavaScript</p>
+        <p class="e-summary">Projects from the Responsive Web Design and the JavaScript Algorithms and Data Structures certifications.</p>
+        <ul class="repo-links" data-list="fccweb"></ul>
+      </div>
+    </article>
+    <article class="collection" id="scripts" data-entry data-district="vault" data-kind="list" data-list="scripts">
+      <div class="e-body">
+        <h3 class="e-title">Scripts and small tools</h3>
+        <p class="e-meta">Python, Java, Bash</p>
+        <p class="e-summary">Things I wrote because I needed them: a bank-statement analyser, a text scraper and cleaner, an Instagram posting bot driven by the Reddit API, and a recursive Sudoku solver.</p>
+        <ul class="repo-links" data-list="scripts"></ul>
+      </div>
+    </article>
+    <article class="collection" id="coursework" data-entry data-district="archive" data-kind="list" data-list="early">
+      <div class="e-body">
+        <h3 class="e-title">Coursework and early projects</h3>
+        <p class="e-meta">Java, C, SQL, HTML · from 2021</p>
+        <p class="e-summary">University coursework and first projects, including Java exercises, C coursework and a group database project.</p>
+        <ul class="repo-links" data-list="early"></ul>
+      </div>
+    </article>
+  </div>
+
+  <article class="callout" id="terminal" data-entry data-district="vault" data-kind="terminal">
+    <div class="e-body">
+      <h3 class="e-title">Prefer a command line?</h3>
+      <p class="e-summary">There is a small working shell for browsing this site: <code>ls</code>, <code>cat</code>, <code>tree</code>, <code>repos</code> and a few more.</p>
+      <p class="e-links"><button class="btn js-only" type="button" data-action="terminal">Open the terminal</button></p>
+    </div>
+  </article>
+
+  <article class="repos" id="repos" data-entry data-district="archive" data-kind="repos">
+    <div class="e-body">
+      <h3 class="e-title">All public repositories</h3>
+      <p class="e-summary">Everything on my GitHub account, newest first.</p>
+      <div class="repo-browser" data-repos>
+        <p><a href="https://github.com/macrisconstantine?tab=repositories" target="_blank" rel="noopener">Browse my repositories on GitHub</a></p>
+      </div>
+    </div>
+  </article>
+</section>
+
 </main>
 
-<noscript>
-  <style>#world,.topbar{display:none!important}#resume{display:block!important}</style>
-</noscript>
+<!-- =============================== contact ============================== -->
+<footer class="section contact" id="contact">
+  <article class="contact-card" id="contact-me" data-entry data-district="hub" data-kind="project">
+    <div class="e-body">
+      <h2 class="e-title">Get in touch</h2>
+      <p class="e-summary">I'm based in Chicago. The fastest way to reach me is email.</p>
+      <p class="e-links contact-links">
+        <a class="btn btn-primary" href="mailto:c.macris@gatech.edu">c.macris@gatech.edu</a>
+        <a class="btn" href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="https://github.com/macrisconstantine" target="_blank" rel="noopener">GitHub</a>
+        <a class="btn" href="https://play.google.com/store/apps/details?id=edu.acg.taxidodger" target="_blank" rel="noopener">Taxi Cat on Google Play</a>
+      </p>
+    </div>
+  </article>
+
+  <div class="footer-meta">
+    <article id="colophon" data-entry data-district="workshop" data-kind="project">
+      <div class="e-body">
+        <h3 class="e-title visually-hidden">How this site is built</h3>
+        <p class="e-summary">This site is hand-written HTML, CSS and JavaScript, with no framework and no build step.</p>
+        <div class="e-more is-open">
+          <p>The game world is drawn to a single canvas. Its sprites are written as text in the source and painted at load, its rooms are generated from small text maps, and its sound is synthesised in the browser. Progress is saved in your browser only; there is no tracking.</p>
+        </div>
+        <p class="e-links"><a href="https://github.com/macrisconstantine/macrisconstantine.github.io" target="_blank" rel="noopener">Source for this site</a></p>
+      </div>
+    </article>
+    <p class="footer-actions">
+      <button class="linkish js-only" type="button" data-action="print">Print as a résumé</button>
+      <span>© 2026 Constantine Macris</span>
+    </p>
+  </div>
+</footer>
+
+<!-- ============================ play mode shell ==========================
+     Empty until the game starts. The canvas above is moved in here when you
+     press Play, and moved back when you leave.
+==================================================================== -->
+<div class="play" id="play" hidden>
+  <div class="stage stage-full" id="stage-play"></div>
+
+  <div class="hud" id="hud">
+    <div class="hud-where">
+      <strong id="hud-zone">The Crossroads</strong>
+      <span id="hud-count"></span>
+    </div>
+    <div class="hud-actions">
+      <button type="button" class="hud-btn" data-action="journal" title="Journal (J or Esc)"><span>Journal</span><kbd>J</kbd></button>
+      <button type="button" class="hud-btn hud-icon" id="btn-sound" data-action="sound" aria-pressed="false" title="Music" aria-label="Music">♪</button>
+      <button type="button" class="hud-btn" data-action="exit" title="Back to the page"><span>Exit</span></button>
+    </div>
+  </div>
+
+  <div class="zone-banner" id="zone-banner" aria-hidden="true"><b></b><span></span></div>
+  <div class="prompt" id="prompt" aria-hidden="true"></div>
+  <div class="hints" id="hints" aria-hidden="true">
+    <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</span>
+    <span><kbd>Shift</kbd> run</span>
+    <span><kbd>Space</kbd> roll</span>
+    <span><kbd>E</kbd> or click: interact</span>
+    <span><kbd>J</kbd> journal</span>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <div class="touch" id="touch" aria-hidden="true">
+    <div class="stick" id="stick"><span class="knob" id="knob"></span></div>
+    <button class="dashbtn" id="dashbtn" type="button" aria-label="Roll">Roll</button>
+    <button class="actbtn" id="actbtn" type="button" aria-label="Interact">E</button>
+  </div>
+</div>
+
+<dialog class="sheet" id="sheet" aria-labelledby="sheet-title">
+  <div class="sheet-inner" id="sheet-inner"></div>
+</dialog>
 
 <script type="module" src="assets/js/main.js"></script>
 </body>

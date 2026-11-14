@@ -1,130 +1,132 @@
 /* =========================================================================
-   main.js — boot. Wires the world to the page and enhances the résumé.
+   main.js — boot. Sets up the page, then loads the game behind it and
+   switches between the two.
    ========================================================================= */
 
-import { Game } from './game.js';
-import { REPOS } from './repos.js';
+import { ui } from './ui.js';
+import { initSite } from './site.js';
 import { save } from './save.js';
-import { esc } from './ui.js';
 
-document.documentElement.classList.remove('no-js');
+const $ = (sel) => document.querySelector(sel);
+const canvas = $('#screen');
+const home = $('#stage-home');
+const shell = $('#play');
+const stage = $('#stage-play');
+const pageParts = [$('.site-nav'), $('main'), $('.contact')];
+const touch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isPlaying = () => document.body.classList.contains('playing');
 
-const canvas = document.getElementById('screen');
-const game = new Game(canvas);
-window.__game = game;   // handy in the console; harmless
-
-/* ------------------------------ top bar --------------------------------- */
-
-const btnMode = document.getElementById('btn-mode');
-const btnMap = document.getElementById('btn-map');
-const btnSound = document.getElementById('btn-sound');
-
-function inResume() { return document.body.classList.contains('resume-mode'); }
-
-function syncMode() {
-  const r = inResume();
-  btnMode.textContent = r ? 'Explore' : 'Résumé';
-  btnMode.title = r ? 'Back to the world (R)' : 'Plain résumé (R)';
-  btnMap.hidden = r;
-  btnSound.hidden = r;
-}
-
-btnMode.addEventListener('click', () => {
-  if (inResume()) game.showWorld(); else game.showResume();
-  syncMode();
-});
-btnMap.addEventListener('click', () => game.ui.toggleMap());
-btnSound.addEventListener('click', () => { const on = game.sound.toggleMusic(); game.syncSound(on); });
-
-// Keep the button label honest when R is pressed instead of clicked.
-const obs = new MutationObserver(syncMode);
-obs.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-
-document.getElementById('enter-world').addEventListener('click', (e) => {
-  e.preventDefault();
-  game.showWorld();
-  syncMode();
-});
-
-/* --------------------------- touch controls ----------------------------- */
-
-const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-if (isTouch) {
-  document.getElementById('touch').removeAttribute('aria-hidden');
+ui.init();
+initSite();
+if (touch) {
   document.body.classList.add('touch-device');
-  game.screen.resize();   // the canvas now has to share the screen with the thumbs
-  game.input.bindTouch(
-    document.getElementById('stick'),
-    document.getElementById('knob'),
-    document.getElementById('actbtn'),
-    document.getElementById('dashbtn'),
-  );
+  const hint = $('.stage-hint');
+  if (hint) hint.innerHTML = '<kbd>Tap</kbd> to play';
 }
 
-/* ------------------------ résumé: the full repo list -------------------- */
+/* --------------------------------- game --------------------------------- */
 
-(function renderRepos() {
-  const host = document.getElementById('r-repolist');
-  const count = document.getElementById('r-repo-count');
-  if (!host) return;
-  count.textContent = `(${REPOS.length})`;
+let game = null, booting = null;
 
-  const langs = [...new Set(REPOS.map((r) => r.lang).filter(Boolean))].sort();
-  host.innerHTML = `
-    <div class="listctl">
-      <input type="search" id="rr-q" placeholder="Search ${REPOS.length} repositories…" aria-label="Search repositories" autocomplete="off">
-      <select id="rr-lang" aria-label="Filter by language">
-        <option value="">All languages</option>
-        ${langs.map((l) => `<option value="${esc(l)}">${esc(l)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="repolist" id="rr-list"></div>
-    <p class="r-ln"><a href="https://github.com/macrisconstantine?tab=repositories" target="_blank" rel="noopener noreferrer">Browse on GitHub ↗</a></p>`;
-
-  const list = document.getElementById('rr-list');
-  const q = document.getElementById('rr-q');
-  const lang = document.getElementById('rr-lang');
-
-  const row = (r) => {
-    const live = r.home || (r.pages ? `https://macrisconstantine.github.io/${r.name}/` : '');
-    return `
-      <article class="repo">
-        <div class="repo-main">
-          <a class="repo-name" href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.name)}</a>
-          ${r.desc ? `<p class="repo-desc">${esc(r.desc)}</p>` : ''}
-        </div>
-        <div class="repo-meta">
-          ${r.lang ? `<span class="lang">${esc(r.lang)}</span>` : ''}
-          <span class="date">${esc(r.created.slice(0, 7))}</span>
-          ${live ? `<a class="livedot" href="${esc(live)}" target="_blank" rel="noopener noreferrer">live ↗</a>` : ''}
-        </div>
-      </article>`;
-  };
-
-  const render = () => {
-    const term = q.value.trim().toLowerCase();
-    const L = lang.value;
-    const out = REPOS.filter((r) =>
-      (!L || r.lang === L) &&
-      (!term || r.name.toLowerCase().includes(term) || (r.desc || '').toLowerCase().includes(term)));
-    list.innerHTML = out.length ? out.map(row).join('') : '<p class="empty">Nothing matches that.</p>';
-  };
-  q.addEventListener('input', render);
-  lang.addEventListener('change', render);
-  render();
-})();
-
-/* --------------------------------- boot --------------------------------- */
-
-game.start();
-syncMode();
-
-// First visit gets the title card; returning visitors go straight in.
-if (!save.seen) {
-  save.markSeen();
-  setTimeout(() => game.ui.intro(), 260);
-} else {
-  setTimeout(() => {
-    game.ui.toast('Welcome back', `${save.count}/${save.total} fragments · level ${save.level}`, 'info');
-  }, 500);
+/** Load and start the game. It begins in the hero, playing itself. */
+function boot() {
+  if (!booting) {
+    booting = import('./game.js').then(({ Game }) => {
+      game = new Game(canvas);
+      // Anyone who has asked their system for less motion gets a still frame
+      // in the hero and a calmer game — with a switch to animate the preview
+      // if they would like to see it.
+      game.still = game.calm = reducedMotion;
+      game.start();
+      if (reducedMotion) {
+        const cap = $('.stage-caption');
+        cap.insertAdjacentHTML('beforeend', '<button type="button" class="linkish">Animate the preview</button>');
+        cap.querySelector('button').addEventListener('click', (e) => { game.still = false; e.target.remove(); });
+      }
+      window.__game = game;
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([en]) => { game.visible = en.isIntersecting; }, { threshold: 0.05 }).observe(home);
+      }
+      if (touch) game.input.bindTouch($('#stick'), $('#knob'), $('#actbtn'), $('#dashbtn'));
+      return game;
+    });
+  }
+  return booting;
 }
+
+async function enterPlay() {
+  const g = await boot();
+  if (isPlaying()) return;
+  if (ui.open) ui.close();
+  document.body.classList.add('playing');
+  shell.hidden = false;
+  stage.appendChild(canvas);
+  for (const el of pageParts) el.inert = true;
+  canvas.tabIndex = 0;
+  $('#hints').classList.remove('gone');
+  g.setMode('play');
+  canvas.focus({ preventScroll: true });
+  if (location.hash !== '#play') history.pushState({ play: true }, '', '#play');
+}
+
+function exitPlay() {
+  if (!isPlaying()) return;
+  if (ui.open) ui.close();
+  home.insertBefore(canvas, home.firstChild);
+  canvas.removeAttribute('tabindex');
+  document.body.classList.remove('playing');
+  shell.hidden = true;
+  for (const el of pageParts) el.inert = false;
+  game.sound.stopMusic();
+  $('#btn-sound').setAttribute('aria-pressed', 'false');
+  game.setMode('attract');
+  if (location.hash === '#play') history.replaceState(null, '', location.pathname + location.search);
+  home.focus({ preventScroll: true });
+}
+
+/* -------------------------------- actions ------------------------------- */
+
+const ACTIONS = {
+  play: enterPlay,
+  exit: exitPlay,
+  journal: () => ui.openJournal(),
+  terminal: () => ui.openTerminal(),
+  sound: () => game && game.toggleMusic(),
+  print: () => window.print(),
+  reset: () => { save.reset(); ui.refresh(); ui.openJournal(); },
+};
+
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const fn = ACTIONS[el.dataset.action];
+  if (fn) { e.preventDefault(); fn(); }
+});
+
+// The hero stage is a div acting as a button, so it needs the keys too.
+home.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && !isPlaying()) { e.preventDefault(); enterPlay(); }
+});
+
+/* -------------------------------- routing -------------------------------
+   #play enters the game; #project/<id> opens that entry.
+   ------------------------------------------------------------------------ */
+
+function route() {
+  const h = location.hash;
+  if (h === '#play') { enterPlay(); return; }
+  if (isPlaying()) { exitPlay(); return; }
+  if (h.startsWith('#project/')) ui.openEntry(decodeURIComponent(h.slice(9)));
+}
+window.addEventListener('popstate', route);
+window.addEventListener('hashchange', route);
+
+/* ---------------------------------- boot -------------------------------- */
+
+if (location.hash === '#play' || location.hash.startsWith('#project/')) route();
+if ('requestIdleCallback' in window) requestIdleCallback(boot, { timeout: 700 });
+else setTimeout(boot, 120);
+
+// Development only: `?test` runs the regression suite against the live page.
+if (new URLSearchParams(location.search).has('test')) import('../../tests/run.js');
