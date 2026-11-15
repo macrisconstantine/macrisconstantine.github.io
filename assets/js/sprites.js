@@ -184,6 +184,76 @@ export const ART = {
     '...OO.OO.OO.....',
   ],
 
+  cat_sit: [                    /* settled, once it has stopped moving */
+    '................',
+    '................',
+    '................',
+    '................',
+    '..oo........oo..',
+    '..ooo......ooo..',
+    '..oooooooooooo..',
+    '..ooooooooooooo.',
+    '..o0oooooo0ooo..',
+    '..oooowwooooooo.',
+    '..ooo0ww0oooooo.',
+    '..oooooooooooo..',
+    '..oooooooooooo..',
+    '.oooooooooooooo.',
+    '.ooooooooooooooO',
+    '..OOOoooooOOOOO.',
+  ],
+  cat_sit_blink: [
+    '................',
+    '................',
+    '................',
+    '................',
+    '..oo........oo..',
+    '..ooo......ooo..',
+    '..oooooooooooo..',
+    '..ooooooooooooo.',
+    '..oOooooooOooo..',
+    '..oooowwooooooo.',
+    '..ooo0ww0oooooo.',
+    '..oooooooooooo..',
+    '..oooooooooooo..',
+    '.oooooooooooooo.',
+    '.ooooooooooooooO',
+    '..OOOoooooOOOOO.',
+  ],
+
+  /* ------------------------------ small things -------------------------- */
+
+  ball_0: [                     /* 6 x 6: something to kick about */
+    '.wwrr.',
+    'wwwrrr',
+    'wwwrrr',
+    'bbbyyy',
+    'bbbyyy',
+    '.bbyy.',
+  ],
+  ball_1: [
+    '.yybb.',
+    'yyybbb',
+    'yyybbb',
+    'rrrwww',
+    'rrrwww',
+    '.rrww.',
+  ],
+  heart: [
+    '.rr.rr.',
+    'r7rrrrr',
+    'rrrrrrr',
+    '.rrrrr.',
+    '..rrr..',
+    '...r...',
+  ],
+  arrow: [                      /* points at whatever E or a click would use */
+    '7777777',
+    '.77777.',
+    '..777..',
+    '...7...',
+  ],
+
   /* ----------------------------- the objects ---------------------------- */
 
   cabinet: [                    /* 16 x 24 */
@@ -934,13 +1004,15 @@ export function textSprite(text, color = '#ffffff', shadow = true) {
   return out;
 }
 
-/** Draw bitmap text. align: 'left' | 'center' | 'right'. */
-export function drawText(ctx, text, x, y, color, align = 'left', shadow = true, scale = 1) {
+/** Draw bitmap text. align: 'left' | 'center' | 'right'.
+    `grid` is how many canvas pixels make one unit, so that text can sit on
+    the same fine grid as whatever it labels instead of on whole units. */
+export function drawText(ctx, text, x, y, color, align = 'left', shadow = true, scale = 1, grid = 1) {
   const s = textSprite(text, color, shadow);
   const w = s.textW * scale;
-  const dx = align === 'center' ? Math.round(x - w / 2)
-    : align === 'right' ? Math.round(x - w) : Math.round(x);
-  ctx.drawImage(s.canvas, dx, Math.round(y), s.w * scale, s.h * scale);
+  const r = (v) => Math.round(v * grid) / grid;
+  const dx = align === 'center' ? r(x - w / 2) : align === 'right' ? r(x - w) : r(x);
+  ctx.drawImage(s.canvas, dx, r(y), s.w * scale, s.h * scale);
   return s;
 }
 
@@ -1018,7 +1090,7 @@ export function spriteFlipped(name, accent) {
 
 /** Which art a logical icon name maps to, and how tall it stands. */
 export const ICONS = {
-  cat:       { art: 'cat',       anim: ['cat_0', 'cat_1'] },
+  cat:       { art: 'cat_sit',   anim: ['cat_sit', 'cat_sit', 'cat_sit', 'cat_sit', 'cat_sit', 'cat_sit_blink'] },
   statue:    { art: 'statue' },
   sign:      { art: 'sign' },
   sword:     { art: 'cabinet' },

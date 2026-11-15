@@ -210,7 +210,7 @@ export const ui = {
       if (locked) {
         return `<section class="j-district j-locked" style="--c:${d.color}">
           <header><h3>${esc(d.name)}</h3><span>locked</span></header>
-          <p class="j-sub">Opens when you have read everything else — ${save.total - save.count} to go.</p>
+          <p class="j-sub">Opens once you have every fragment. ${save.total - save.count} to go.</p>
         </section>`;
       }
       const rows = list.map((e) => `
@@ -232,8 +232,8 @@ export const ui = {
     this.show('journal', `
       <div class="sheet-head">
         <h2 id="sheet-title">Journal</h2>
-        <p>Everything in the world, by district. Open any entry from here, or travel straight to it.</p>
-        <div class="journal-progress"><span>${save.count} of ${save.total} read</span><div class="meter"><i style="width:${pct}%"></i></div><span>${pct}%</span></div>
+        <p>Everything in here, room by room. Open anything from this list, or travel straight to its room.</p>
+        <div class="journal-progress"><span>${save.count} of ${save.total} fragments</span><div class="meter"><i style="width:${pct}%"></i></div><span>${pct}%</span></div>
       </div>
       <div class="sheet-body">
         <div class="j-districts">${blocks}</div>
@@ -255,11 +255,11 @@ export const ui = {
     this.show('help', `
       <div class="sheet-head">
         <h2 id="sheet-title">How this works</h2>
-        <p>This is my portfolio as a small world. Each district holds a part of my work; anything glowing can be read.</p>
+        <p>Each room holds part of my work. Walk up to anything with a fragment floating over it and press <kbd>E</kbd>; reading it earns you the fragment.</p>
       </div>
       <div class="sheet-body">
         ${CONTROLS}
-        <h3 class="label">Districts</h3>
+        <h3 class="label">Rooms</h3>
         <div class="j-help">
           ${DISTRICTS.filter((d) => d.id !== 'hub' && d.id !== 'workshop').map((d) =>
             `<span><b style="color:${d.color}">${esc(d.name)}</b> ${esc(d.sub.toLowerCase())}</span>`).join('')}
@@ -288,11 +288,23 @@ export const ui = {
     this.refresh();
   },
 
+  /** The fragment counter. A fragment that is still on its way to the
+      player is not counted until it lands, so the number ticks up as it
+      arrives rather than behind the panel that earned it. */
   refresh() {
     const c = $('#hud-count');
     if (!c) return;
-    const st = this.zone ? save.district(this.zone) : null;
-    c.innerHTML = (st && st.total ? `<i>${st.got}/${st.total} here · </i>` : '') + `${save.count}/${save.total}`;
+    const g = this.game;
+    const inFlight = g ? g.pending.length + g.motes.length : 0;
+    c.textContent = Math.max(0, save.count - inFlight);
+    $('#hud-total').textContent = save.total;
+  },
+
+  /** Make the counter jump: something was just collected. */
+  bump() {
+    const f = $('#hud-frag');
+    if (!f) return;
+    f.classList.remove('bump'); void f.offsetWidth; f.classList.add('bump');
   },
 
   prompt(key, text) {

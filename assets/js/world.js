@@ -89,6 +89,10 @@ export const THEMES = {
                                     wall:true to hang it on the wall behind
      { to, tx, ty, label, color }   a door
    and may add  on:'rug'|'path'  for the floor beneath it, and  light:{r,color}.
+
+   `tour` is the walk the character takes when the game is playing itself:
+   a list of [x, y] tiles, or [x, y, seconds] to stop there and look up at
+   whatever it is standing in front of.
    ------------------------------------------------------------------------- */
 
 const FIRE = { r: 54, color: '#ffb060', flicker: 1 };
@@ -106,7 +110,8 @@ export const ROOMS = {
   hub: {
     name: 'The Crossroads', district: 'hub', theme: 'garden', seed: 101, music: 'hub',
     spawn: [13, 8],
-    tour: [[7, 8], [7, 7], [19, 7], [19, 9], [7, 9]],
+    tour: [[13, 7, 0.8], [17, 9, 0.7], [14, 10], [9, 10], [7, 8]],
+    ball: [15, 10],
     map: [
       '###########################',
       '#############0#############',
@@ -143,7 +148,7 @@ export const ROOMS = {
   arcade: {
     name: 'The Arcade', district: 'arcade', theme: 'neon', seed: 202, music: 'arcade',
     spawn: [23, 6],
-    tour: [[22, 6], [3, 6], [3, 4], [22, 4]],
+    tour: [[20, 3, 0.7], [11, 3, 0.7], [5, 3, 0.7], [3, 6]],
     map: [
       '##########################',
       '###s######s####s######s###',
@@ -175,7 +180,7 @@ export const ROOMS = {
   foundry: {
     name: 'The Foundry', district: 'foundry', theme: 'metal', seed: 303, music: 'foundry',
     spawn: [2, 6],
-    tour: [[2, 6], [21, 5], [21, 7], [2, 7]],
+    tour: [[3, 3, 0.7], [8, 3, 0.7], [14, 3, 0.7], [19, 3, 0.7], [21, 6]],
     map: [
       '########################',
       '#####s#####s####s####s##',
@@ -203,7 +208,7 @@ export const ROOMS = {
   observatory: {
     name: 'The Observatory', district: 'observatory', theme: 'void', seed: 404, music: 'observatory',
     spawn: [21, 6],
-    tour: [[21, 6], [2, 5], [2, 7], [21, 7]],
+    tour: [[19, 3, 0.7], [14, 3, 0.7], [8, 3, 0.7], [3, 3, 0.7], [3, 6]],
     map: [
       '########################',
       '#####s#####s####s####s##',
@@ -232,7 +237,7 @@ export const ROOMS = {
   vault: {
     name: 'The Terminal', district: 'vault', theme: 'grid', seed: 505, music: 'vault',
     spawn: [2, 6],
-    tour: [[2, 6], [21, 5], [21, 7], [2, 7]],
+    tour: [[3, 3, 0.7], [8, 3, 0.7], [14, 3, 0.7], [19, 3, 0.7], [21, 6]],
     map: [
       '########################',
       '#####s#####s####s####s##',
@@ -262,7 +267,7 @@ export const ROOMS = {
   archive: {
     name: 'The Archive', district: 'archive', theme: 'wood', seed: 606, music: 'archive',
     spawn: [12, 3],
-    tour: [[12, 3], [12, 6], [3, 6], [3, 7], [20, 7], [20, 6]],
+    tour: [[12, 6], [9, 6, 0.7], [4, 6, 0.7], [14, 6, 0.7], [19, 6, 0.7]],
     map: [
       '########################',
       '###s########7#######s###',

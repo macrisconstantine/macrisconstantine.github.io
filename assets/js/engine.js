@@ -3,32 +3,56 @@
    Nothing here knows about the portfolio; it is just the machine.
    ========================================================================= */
 
-/* The render target in world pixels. It changes with the window: the canvas
-   is always scaled by a whole number of device pixels, so the art stays
-   crisp, and the view simply shows more or less of the room. */
+/* How much of the world is on screen, in world pixels. It changes with the
+   window: one world pixel is always a whole number of device pixels, so the
+   art stays crisp, and the view simply shows more or less of the room. */
 export const VIEW = { w: 320, h: 200 };
 
 const VIEW_H_TARGET = 190;   // aim to show about this much of the world, top to bottom
-const VIEW_W_MIN = 240;      // ...but never less than this across
+const VIEW_W_MIN = 240;      // ...but not less than this across, if it can be helped
+const VIEW_W_FLOOR = 150;    // ...and never less than this
 
-/* ----------------------------------- screen ----------------------------- */
+/* ----------------------------------- screen -----------------------------
+   The canvas is as large as the screen area it covers, in device pixels, and
+   everything is drawn through a whole-number scale. Sprites therefore stay
+   sharp, but can sit — and move — a single screen pixel at a time. Drawing
+   to a small canvas and stretching it would be cheaper, but then nothing
+   could move by less than one whole world pixel, which is five or six
+   screen pixels on a desktop, and that reads as judder.
+
+   `fine` can be switched off to get exactly that cheaper canvas; the game
+   does so by itself on a machine that cannot keep up.
+   ------------------------------------------------------------------------ */
 
 export class Screen {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false });
     this.scale = 1;            // CSS pixels per world pixel
+    this.px = 1;               // canvas pixels per world pixel
+    this.fine = true;
     this.onReshape = null;
-    this._observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => this.resize()) : null;
+    this._box = null;          // the holder's exact size in device pixels, when the browser says
+    this._observer = typeof ResizeObserver === 'function' ? new ResizeObserver((list) => {
+      const e = list[list.length - 1];
+      const b = e && e.devicePixelContentBoxSize && e.devicePixelContentBoxSize[0];
+      this._box = b ? { el: e.target, w: b.inlineSize, h: b.blockSize } : null;
+      this.resize();
+    }) : null;
     this.watch();
     window.addEventListener('resize', () => this.resize());
   }
 
   /** (Re)attach to whatever element currently holds the canvas. */
   watch() {
+    this._box = null;
+    const host = this.canvas.parentElement;
     if (this._observer) {
       this._observer.disconnect();
-      if (this.canvas.parentElement) this._observer.observe(this.canvas.parentElement);
+      if (host) {
+        try { this._observer.observe(host, { box: 'device-pixel-content-box' }); }
+        catch { this._observer.observe(host); }
+      }
     }
     this.resize();
   }
@@ -39,20 +63,29 @@ export class Screen {
     const cw = host.clientWidth, ch = host.clientHeight;
     if (!cw || !ch) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 4);
-    const dw = cw * dpr, dh = ch * dpr;
+    let dw = Math.round(cw * dpr), dh = Math.round(ch * dpr);
+    // Prefer the browser's own count of device pixels: at 125% or 150%
+    // scaling the rounded figure can be one out, which would blur the lot.
+    const b = this._box;
+    if (b && b.el === host && Math.abs(b.w - dw) <= dpr + 1 && Math.abs(b.h - dh) <= dpr + 1) { dw = b.w; dh = b.h; }
+
     // Whole device pixels per world pixel: whichever count lands closest to
     // the target height, held back if that would make the view too narrow.
-    const k = Math.max(1, Math.min(Math.round(dh / VIEW_H_TARGET), Math.floor(dw / VIEW_W_MIN)));
-    const vw = Math.ceil(dw / k), vh = Math.ceil(dh / k);
-    const changed = vw !== VIEW.w || vh !== VIEW.h || this.canvas.width !== vw;
-    if (changed) {
-      VIEW.w = vw; VIEW.h = vh;
-      this.canvas.width = vw; this.canvas.height = vh;
-      this.ctx.imageSmoothingEnabled = false;
-    }
+    // A narrow, low-density window (a browser snapped to a sliver) would end
+    // up at 1, with everything tiny; there, showing less of the room at 2 is
+    // the better trade.
+    const fit = Math.max(Math.floor(dw / VIEW_W_MIN), dw >= VIEW_W_FLOOR * 2 ? 2 : 1);
+    const k = Math.max(1, Math.min(Math.round(dh / VIEW_H_TARGET), fit));
+    const px = this.fine ? k : 1;
+    const w = this.fine ? dw : Math.ceil(dw / k), h = this.fine ? dh : Math.ceil(dh / k);
+    const changed = this.canvas.width !== w || this.canvas.height !== h || this.px !== px;
+    if (this.canvas.width !== w) this.canvas.width = w;
+    if (this.canvas.height !== h) this.canvas.height = h;
+    this.px = px;
+    VIEW.w = w / px; VIEW.h = h / px;
     this.scale = k / dpr;
-    this.canvas.style.width = (vw * k) / dpr + 'px';
-    this.canvas.style.height = (vh * k) / dpr + 'px';
+    this.canvas.style.width = (w * k) / (px * dpr) + 'px';
+    this.canvas.style.height = (h * k) / (px * dpr) + 'px';
     if (changed && this.onReshape) this.onReshape();
   }
 }
@@ -185,7 +218,11 @@ export class Input {
 /* ---------------------------------- camera ------------------------------ */
 
 export class Camera {
-  constructor() { this.x = 0; this.y = 0; this.shake = 0; }
+  constructor() {
+    this.x = 0; this.y = 0;
+    this.shake = 0; this.sx = 0; this.sy = 0;
+    this.grid = 1;             // canvas pixels per world pixel; offsets snap to it
+  }
 
   /** Where the camera would settle for this target, already clamped. */
   target(tx, ty, roomW, roomH) {
@@ -202,6 +239,9 @@ export class Camera {
     const k = 1 - Math.pow(1 - 0.16, Math.min(4, dt * 60));
     this.x += (w.x - this.x) * k;
     this.y += (w.y - this.y) * k;
+    // Arrive, rather than creeping the last fraction of a pixel for seconds.
+    if (Math.abs(w.x - this.x) < 0.02) this.x = w.x;
+    if (Math.abs(w.y - this.y) < 0.02) this.y = w.y;
   }
 
   /** Jump straight there — used when entering a room. */
@@ -210,9 +250,17 @@ export class Camera {
     this.x = w.x; this.y = w.y;
   }
 
-  get ox() { return Math.round(this.x + (this.shake ? (Math.random() - 0.5) * this.shake : 0)); }
-  get oy() { return Math.round(this.y + (this.shake ? (Math.random() - 0.5) * this.shake : 0)); }
-  tick() { if (this.shake > 0) this.shake *= 0.86; if (this.shake < 0.1) this.shake = 0; }
+  /** The offset to draw with: on the canvas's pixel grid, shake included. */
+  get ox() { return Math.round((this.x + this.sx) * this.grid) / this.grid; }
+  get oy() { return Math.round((this.y + this.sy) * this.grid) / this.grid; }
+
+  /** Once a frame: decay the shake and roll this frame's jolt. */
+  tick(dt = 1 / 60) {
+    if (this.shake > 0) this.shake *= Math.pow(0.86, dt * 60);
+    if (this.shake < 0.1) this.shake = 0;
+    this.sx = this.shake ? (Math.random() - 0.5) * this.shake : 0;
+    this.sy = this.shake ? (Math.random() - 0.5) * this.shake : 0;
+  }
 }
 
 /* --------------------------------- particles ---------------------------- */
@@ -225,11 +273,11 @@ export class Particles {
     this.list.push({ vx: 0, vy: 0, g: 50, size: 1, max: p.life, ...p });
   }
 
-  burst(x, y, color, n = 10, spread = 40, life = 0.6) {
+  burst(x, y, color, n = 10, spread = 40, life = 0.6, extra = null) {
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const s = Math.random() * spread;
-      this.add({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 20, life, color, size: Math.random() < 0.3 ? 2 : 1 });
+      this.add({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 20, life, color, size: Math.random() < 0.3 ? 2 : 1, ...extra });
     }
   }
 
@@ -243,7 +291,7 @@ export class Particles {
     }
   }
 
-  draw(ctx, ox, oy, glowOnly = false) {
+  draw(ctx, ox, oy, glowOnly = false, grid = 1) {
     for (const p of this.list) {
       if (!!p.glow !== glowOnly) continue;
       const f = p.life / p.max;
@@ -251,7 +299,7 @@ export class Particles {
       const a = p.soft ? Math.min(1, f * 4, (1 - f) * 4) : Math.max(0, f);
       ctx.globalAlpha = a * (p.alpha ?? 1) * (p.blink ? 0.55 + 0.45 * Math.sin(p.life * p.blink) : 1);
       ctx.fillStyle = p.color;
-      ctx.fillRect(Math.round(p.x - ox), Math.round(p.y - oy), p.size, p.size);
+      ctx.fillRect(Math.round((p.x - ox) * grid) / grid, Math.round((p.y - oy) * grid) / grid, p.size, p.size);
     }
     ctx.globalAlpha = 1;
   }
@@ -313,7 +361,17 @@ export class Sound {
   step1()  { this.blip(170 + Math.random() * 40, 0.035, 'triangle', 0.04); }
   open()   { this.blip(520, 0.05); setTimeout(() => this.blip(780, 0.08), 55); }
   close()  { this.blip(420, 0.05); setTimeout(() => this.blip(300, 0.07), 50); }
-  collect() { [660, 880, 1320].forEach((f, i) => setTimeout(() => this.blip(f, i === 2 ? 0.14 : 0.06, 'square', 0.09), i * 60)); }
+  /** A fragment landing. `step` climbs a major scale, so a run of them rises. */
+  collect(step = 0) {
+    const k = Math.pow(2, [0, 2, 4, 5, 7, 9, 11, 12][Math.min(7, Math.max(0, step))] / 12);
+    [660, 880, 1320].forEach((f, i) => setTimeout(() => this.blip(f * k, i === 2 ? 0.14 : 0.06, 'square', 0.09), i * 60));
+  }
+  pop()    { this.blip(540, 0.05, 'triangle', 0.07); }
+  purr()   { for (let i = 0; i < 5; i++) setTimeout(() => this.blip(88 + (i % 2) * 16, 0.1, 'sawtooth', 0.035), i * 90); }
+  mew()    { this.blip(820, 0.06, 'triangle', 0.06); setTimeout(() => this.blip(640, 0.1, 'triangle', 0.05), 65); }
+  rustle() { this.blip(1500 + Math.random() * 600, 0.03, 'triangle', 0.016); }
+  kick()   { this.blip(210, 0.06, 'triangle', 0.09); }
+  bonk()   { this.blip(118, 0.08, 'triangle', 0.08); }
   fanfare() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.blip(f, 0.16, 'square', 0.09), i * 85)); }
   bad()    { this.blip(160, 0.18, 'sawtooth', 0.08); }
   door()   { this.blip(300, 0.09, 'triangle', 0.09); setTimeout(() => this.blip(450, 0.1, 'triangle', 0.08), 80); }

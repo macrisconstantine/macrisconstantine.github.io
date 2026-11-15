@@ -115,8 +115,13 @@ class Page:
         marker = os.path.join(self.profile, "DevToolsActivePort")
         for _ in range(200):
             if os.path.exists(marker):
-                with open(marker) as fh:
-                    first = fh.readline().strip()
+                # The browser may still be writing it, and on Windows the
+                # file is locked while it does: just look again shortly.
+                try:
+                    with open(marker) as fh:
+                        first = fh.readline().strip()
+                except OSError:
+                    first = ""
                 if first.isdigit():
                     return int(first)
             if self.proc.poll() is not None:

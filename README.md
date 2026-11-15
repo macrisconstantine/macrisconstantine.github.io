@@ -7,10 +7,15 @@ small game you can step into. Press **Play** and the page becomes a top-down
 world in which every project on the page is something you can walk up to.
 Several of the games in it run right there in the browser.
 
+I built it with [Claude](https://claude.com/claude-code), Anthropic's AI coding
+assistant: I directed it and play-tested it, and Claude wrote the code and drew
+the pixel art. The projects it shows are my own work, and so are the Taxi Cat
+sprites.
+
 ## How it is put together
 
-- **Hand-written HTML, CSS and JavaScript modules.** No framework, no bundler,
-  no build step; the repository is the site.
+- **Plain HTML, CSS and JavaScript modules.** No framework, no bundler, no
+  build step; the repository is the site.
 - **The page is the content.** Every project, role and course is an element in
   `index.html` marked `data-entry`. The page shows them in place; the game
   looks them up by id and clones them into its panels; the terminal builds its
@@ -21,8 +26,12 @@ Several of the games in it run right there in the browser.
   small text maps in `assets/js/world.js`; floors and walls are painted once
   per room from a seeded generator, then lit each frame by cutting pools of
   light out of a darkness layer.
-- **Whole-pixel scaling.** The canvas is always scaled by a whole number of
-  device pixels, and the amount of world on show adapts to the window instead.
+- **Sharp pixels, smooth movement.** One world pixel is always a whole number
+  of device pixels, so the art stays crisp, and the amount of world on show
+  adapts to the window. The canvas itself is at screen resolution, so things
+  move one screen pixel at a time rather than one world pixel (five or six
+  screen pixels on a desktop), which would judder. If a machine cannot hold
+  the frame rate at that size, the game drops to a small stretched canvas.
 - **Real media for real projects.** Gameplay captures and screenshots live in
   `assets/media`. The Taxi Cat cabinet is drawn with the original sprites from
   the Android game.
@@ -77,17 +86,20 @@ python tools/headless.py test "http://localhost:8099/?test"
 
 It needs Chrome or Edge and the `websocket-client` Python package. It checks
 that the page and the world agree about what exists, that every room can be
-walked, and the feel of the controls: walk, run and roll speeds; that Space
-only ever rolls and never opens anything; that E and a click interact; that
-whatever opened a panel also closes it. Opening `/?test` in a normal browser
-runs the same suite and logs to the console (it resets saved progress).
+walked (including the route the game takes when it plays itself), and the feel
+of the controls: walk, run and roll speeds; that movement is drawn to the
+screen pixel; that Space only ever rolls and never opens anything; that E and
+a click interact; that whatever opened a panel also closes it; that a fragment
+flies to you and is counted when it lands. Opening `/?test` in a normal
+browser runs the same suite and logs to the console (it resets saved
+progress).
 
 `tools/headless.py shot <url> <file.png>` takes screenshots the same way.
 
 ## Printing
 
-Printing the page gives a plain résumé: the stylesheet drops the game, the
-pictures and the navigation and sets the text in reading order.
+Printing the page gives a plain text version: the stylesheet drops the game,
+the pictures and the navigation and sets the text in reading order.
 
 ## Licence
 

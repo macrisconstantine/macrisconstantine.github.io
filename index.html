@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Constantine Macris — Software &amp; Game Developer</title>
-<meta name="description" content="Constantine Macris is a software and game developer in Chicago: a published Android game, a Unity RPG with a locally-run language-model companion, and production ASP.NET work. A portfolio you can also play.">
+<title>Constantine Macris — Software Engineer</title>
+<meta name="description" content="Constantine Macris is a software engineer in Chicago who also makes games: a published Android game, a Unity RPG whose companion runs on a local language model, and more. A portfolio you can also play.">
 <meta name="author" content="Constantine Macris">
 <meta name="theme-color" content="#0d0c14">
 <link rel="canonical" href="https://macrisconstantine.github.io/">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="Constantine Macris — Software &amp; Game Developer">
-<meta property="og:description" content="Games, machine-learning projects and production software — in a portfolio you can also play.">
+<meta property="og:title" content="Constantine Macris — Software Engineer">
+<meta property="og:description" content="Games, machine-learning projects and software, in a portfolio you can also play.">
 <meta property="og:url" content="https://macrisconstantine.github.io/">
 <meta property="og:image" content="https://macrisconstantine.github.io/preview.png">
 <meta property="og:image:width" content="1200">
@@ -29,7 +29,7 @@
   "@context": "https://schema.org",
   "@type": "Person",
   "name": "Constantine Macris",
-  "jobTitle": "Software Developer",
+  "jobTitle": "Software Engineer",
   "address": { "@type": "PostalAddress", "addressLocality": "Chicago", "addressRegion": "IL", "addressCountry": "US" },
   "url": "https://macrisconstantine.github.io/",
   "sameAs": ["https://github.com/macrisconstantine", "https://www.linkedin.com/in/constantine-macris/"],
@@ -66,17 +66,16 @@
 <!-- ================================ hero ================================ -->
 <section class="hero">
   <div class="hero-copy">
-    <p class="eyebrow">Software &amp; game developer · Chicago</p>
+    <p class="eyebrow">Software engineer · Chicago</p>
     <h1>Constantine Macris</h1>
-    <p class="lede">I build games and the systems behind them. I've published an Android game on
-      Google Play, put a locally-run language model inside a Unity RPG, and I'm the lead contributor on
-      two production applications at Gecko Software.</p>
-    <p class="hero-sub">I'm also studying machine learning part-time at Georgia Tech.</p>
+    <p class="lede">I'm a software engineer who also makes games. This page is a small game too:
+      walk around it, or just scroll.</p>
+    <p class="hero-sub">I work at Gecko Software and study machine learning part-time at Georgia Tech.</p>
     <div class="hero-actions">
       <button class="btn btn-primary" type="button" data-action="play">
-        <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg> Play this page
+        <svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 1l7 4-7 4z"/></svg> Play
       </button>
-      <a class="btn" href="#work">View work</a>
+      <a class="btn" href="#work">See my work</a>
     </div>
     <ul class="hero-links">
       <li><a href="https://github.com/macrisconstantine" target="_blank" rel="noopener">GitHub</a></li>
@@ -91,7 +90,7 @@
       <canvas id="screen" aria-hidden="true"></canvas>
       <div class="stage-hint"><kbd>Click</kbd> to play</div>
     </div>
-    <p class="stage-caption">This page is also a small game. Everything below is somewhere inside it.</p>
+    <p class="stage-caption">Everything below is somewhere in here.</p>
   </div>
 </section>
 
@@ -99,7 +98,7 @@
 <section class="section" id="work">
   <header class="section-head">
     <h2>Work</h2>
-    <p>Games, machine-learning projects and web work. Anything marked <span class="badge">Playable</span> runs right here in the browser.</p>
+    <p>Games, some machine learning, and web projects. Anything marked <span class="badge">Playable</span> runs right here in the browser.</p>
   </header>
 
   <div class="filters" role="group" aria-label="Filter projects" hidden>
@@ -119,12 +118,12 @@
       <div class="e-body">
         <h3 class="e-title">Pots of Pottimea</h3>
         <p class="e-meta">2D action RPG · Unity, C# · 2022</p>
-        <p class="e-summary">A Zelda-inspired action RPG that I designed and built solo in Unity over one semester.</p>
+        <p class="e-summary">A Zelda-inspired action RPG I designed and built on my own in Unity, over one semester.</p>
         <div class="e-more">
           <ul>
-            <li>39 C# scripts covering movement and animation state, enemy AI, health and damage, destructibles and projectiles, menus and UI.</li>
-            <li>NPC navigation built on the A* Pathfinding Project.</li>
-            <li>I came back to it two years later for my capstone, which gave its companion character a language model.</li>
+            <li>Movement, combat, enemy AI, breakable pots, projectiles and menus, all written in C#.</li>
+            <li>NPCs find their way around using the A* Pathfinding Project.</li>
+            <li>Two years later I came back to it for my capstone and gave its companion character a language model.</li>
           </ul>
           <p>The repository includes a Windows build. It uses Git LFS, so clone it rather than downloading the ZIP.</p>
         </div>
@@ -155,13 +154,13 @@
       <div class="e-body">
         <h3 class="e-title">A companion that runs on a local language model</h3>
         <p class="e-meta">Capstone · Unity, C#, OpenHermes-2.5-Mistral-7B · 2024</p>
-        <p class="e-summary">For my capstone I replaced the companion's dialogue tree in Pots of Pottimea with a 7B language model that runs on the player's own machine.</p>
+        <p class="e-summary">For my capstone I replaced the companion's dialogue tree in Pots of Pottimea with a language model that runs on the player's own computer.</p>
         <div class="e-more">
           <ul>
-            <li>OpenHermes-2.5-Mistral-7B, quantized to Q4_K_M, runs locally through llamafile and is connected to the game with LLMUnity.</li>
-            <li>A context pipeline feeds the model live quest and inventory state.</li>
-            <li>Prompt constraints hold its answers to the game's lore.</li>
-            <li>Tuned so that a full round trip still feels conversational on consumer hardware.</li>
+            <li>The model is OpenHermes-2.5-Mistral-7B, quantized to Q4_K_M. It runs locally through llamafile and talks to the game through LLMUnity.</li>
+            <li>It is told what is going on in the game, your quests and your inventory, so its answers fit the moment.</li>
+            <li>The prompt keeps it inside the game's world.</li>
+            <li>Tuned so that replies come back quickly enough to feel like a conversation on an ordinary PC.</li>
           </ul>
         </div>
         <ul class="tags"><li>Local LLM inference</li><li>GGUF</li><li>llamafile</li><li>LLMUnity</li><li>Prompt design</li><li>Unity</li></ul>
@@ -177,12 +176,12 @@
       <div class="e-body">
         <h3 class="e-title">Taxi Cat</h3>
         <p class="e-meta">Android arcade game · Java, Android SDK · 2023 · on Google Play</p>
-        <p class="e-summary">An arcade game I published on Google Play: you are a cat, and you dodge oncoming taxis for as long as you can.</p>
+        <p class="e-summary">An arcade game I published on Google Play. You're a cat, and you dodge taxis for as long as you can.</p>
         <div class="e-more">
           <ul>
-            <li>Built in Android Studio with Java and XML layouts. It started from a tutorial foundation and I extended it into a finished game.</li>
-            <li>Character customisation — you choose your cat's name and look — and a persistent high-score leaderboard.</li>
-            <li>I took it through release myself: signing, release configuration, the store listing and Play Store review. It has been free on Google Play since 2023.</li>
+            <li>Built in Android Studio with Java. It started from a tutorial and I extended it into a finished game.</li>
+            <li>You can name your cat and choose its look, and there is a high-score board.</li>
+            <li>I handled the release myself: signing, the store listing and Play Store review. It has been free on Google Play since 2023.</li>
           </ul>
         </div>
         <ul class="tags"><li>Android</li><li>Java</li><li>XML layouts</li><li>Play Store release</li></ul>
@@ -215,12 +214,12 @@
       <div class="e-body">
         <h3 class="e-title">Detecting depression from clinical interviews</h3>
         <p class="e-meta">Honors thesis · Python, Keras, Django · 2023–2024</p>
-        <p class="e-summary">My honors thesis: predicting depression severity from interview transcripts, and benchmarking LSTM classifiers against locally-run language models.</p>
+        <p class="e-summary">My honors thesis: estimating depression severity from interview transcripts, and comparing LSTM classifiers with language models run locally.</p>
         <div class="e-more">
           <ul>
-            <li>Obtained access to the restricted DAIC-WOZ clinical corpus and built the ingest and cleaning pipeline for it: 189 interviews, 283k words.</li>
-            <li>Trained single- and double-layer LSTM classifiers in Keras over GloVe embeddings to predict PHQ-8 severity.</li>
-            <li>Benchmarked them against Mistral 7B Instruct and WizardLM 13B run locally, with prompts designed to force structured output.</li>
+            <li>I got access to the restricted DAIC-WOZ clinical corpus and built the pipeline that loads and cleans it: 189 interviews, 283k words.</li>
+            <li>Trained one- and two-layer LSTM classifiers in Keras, over GloVe embeddings, to predict PHQ-8 severity.</li>
+            <li>Compared them with Mistral 7B Instruct and WizardLM 13B running locally, using prompts designed to force structured output.</li>
             <li>Built a Django interface for real-time analysis and model comparison.</li>
           </ul>
         </div>
@@ -418,29 +417,23 @@
 
   <article class="role" id="gecko" data-entry data-district="foundry" data-kind="project">
     <div class="e-body">
-      <h3 class="e-title">Software Developer, Gecko Software LLC</h3>
-      <p class="e-meta">Chicago, IL · November 2024 – present</p>
-      <p class="e-summary">I'm the lead contributor on two production ASP.NET / VB.NET applications running on SQL Server.</p>
-      <div class="stats">
-        <div class="stat"><b>89</b><span>tracked tickets in the year to October 2026</span></div>
-        <div class="stat"><b>223</b><span>commits over the same year</span></div>
-        <div class="stat"><b>≈ ⅔</b><span>of the team's output</span></div>
-      </div>
+      <h3 class="e-title">Software Engineer, Gecko Software</h3>
+      <p class="e-meta">Chicago · November 2024 – present</p>
+      <p class="e-summary">I build and maintain two production web applications in ASP.NET and VB.NET on SQL Server. Some of what I've worked on:</p>
     </div>
   </article>
 
   <div class="tiles">
     <article class="tile" id="quotes" data-entry data-district="foundry" data-kind="project">
       <div class="e-body">
-        <h3 class="e-title">Quote-to-approval system</h3>
-        <p class="e-meta">Built from nothing · about 10,500 lines</p>
-        <p class="e-summary">I built the platform's SKU quoting workflow from scratch. It is now the largest single feature in the platform.</p>
+        <h3 class="e-title">A quoting workflow</h3>
+        <p class="e-meta">New feature, built from scratch</p>
+        <p class="e-summary">A request starts as a form, gets priced and approved, and comes out the other end as a finished price sheet.</p>
         <div class="e-more">
           <ul>
-            <li>Staged requests, with duplicate detection both in the form and against the database.</li>
-            <li>Live price calculation as a quote is built.</li>
-            <li>Excel price-sheet generation.</li>
-            <li>Email notification on every state change.</li>
+            <li>Checks for duplicates as a request is entered.</li>
+            <li>Works out prices live while a quote is being put together.</li>
+            <li>Generates the Excel price sheet and sends the notification emails.</li>
           </ul>
         </div>
       </div>
@@ -448,35 +441,17 @@
 
     <article class="tile" id="estimator" data-entry data-district="foundry" data-kind="project">
       <div class="e-body">
-        <h3 class="e-title">Price estimator rebuild</h3>
-        <p class="e-meta">Scored leave-one-out against 229 hand-priced quotes</p>
-        <p class="e-summary">I rebuilt the system's price estimator and measured it against historical quotes that had been priced by hand.</p>
-        <div class="stats stats-delta">
-          <div class="stat"><b><s>63%</s> 97%</b><span>coverage</span></div>
-          <div class="stat"><b><s>275%</s> 13%</b><span>median error</span></div>
-          <div class="stat"><b><s>2%</s> 71%</b><span>of estimates within 25% of the true price</span></div>
-        </div>
-        <div class="e-more">
-          <p>The rewrite also exposed a silent failure: a local variable shadowing a function of the same name had been returning blank estimates for the life of the app domain.</p>
-        </div>
+        <h3 class="e-title">A better price estimator</h3>
+        <p class="e-meta">Rebuilt, then tested against past quotes</p>
+        <p class="e-summary">I rebuilt the tool that estimates prices and checked it against old quotes that had been priced by hand. It now handles far more cases and lands much closer to the real numbers.</p>
       </div>
     </article>
 
     <article class="tile" id="performance" data-entry data-district="foundry" data-kind="project">
       <div class="e-body">
-        <h3 class="e-title">Performance work</h3>
+        <h3 class="e-title">Faster pages</h3>
         <p class="e-meta">Measured before and after</p>
-        <p class="e-summary">I cut load times on the screens people use most.</p>
-        <div class="stats stats-delta">
-          <div class="stat"><b><s>8.3 s</s> 1.6 s</b><span>slowest screen in daily use</span></div>
-          <div class="stat"><b><s>≈ 49</s> ≈ 16</b><span>SQL round trips per home-page load</span></div>
-        </div>
-        <div class="e-more">
-          <ul>
-            <li>The slow screen: server-side paging, a lightweight count query and in-query sorting.</li>
-            <li>The home page: cached role lookups, and queries batched into multi-result-set commands.</li>
-          </ul>
-        </div>
+        <p class="e-summary">I found the screens people waited on most and made them quick, mostly by asking the database for less, less often.</p>
       </div>
     </article>
   </div>
@@ -485,11 +460,11 @@
     <div class="e-body">
       <h3 class="e-title">Earlier roles</h3>
       <p class="e-meta">Athens, Greece · 2020 – 2024</p>
-      <p class="e-summary">While studying I worked at my university and spent four summers managing a volunteer warehouse.</p>
+      <p class="e-summary">While I was studying I worked at my university, and I spent four summers running a volunteer warehouse.</p>
       <div class="e-more is-open">
         <ul>
-          <li><strong>Deree — The American College of Greece</strong>, 2021 – 2024. Computer labs assistant and technical support, then liaison and technical assistance in the Office of Student Affairs. Volunteer orientation leader.</li>
-          <li><strong>Hellenic Ministries</strong>, summers 2020 – 2023. Warehouse manager: recruited, trained and coordinated teams of 10 to 35 volunteers packing 20 to 60 pallets of literature packets in 16-day runs.</li>
+          <li><strong>Deree — The American College of Greece</strong>, 2021 – 2024. Computer lab assistant and tech support, then an assistant in the Office of Student Affairs. Volunteer orientation leader.</li>
+          <li><strong>Hellenic Ministries</strong>, summers 2020 – 2023. Warehouse manager: I recruited, trained and organised the volunteer teams that packed the pallets.</li>
         </ul>
       </div>
     </div>
@@ -506,11 +481,10 @@
     <article class="about" id="about-me" data-entry data-district="hub" data-kind="project">
       <div class="e-body">
         <h3 class="e-title visually-hidden">About me</h3>
-        <p class="e-summary">I'm a software developer based in Chicago. I studied software development at Deree in Athens, where I started making games in Unity and for Android and wrote an honors thesis on language models.</p>
+        <p class="e-summary">I'm a software engineer in Chicago. I studied software development at Deree in Athens, which is where I started making games, first in Unity and then for Android.</p>
         <div class="e-more is-open">
-          <p>Since late 2024 I've worked on production ASP.NET applications at Gecko Software, and since January 2026 I've been studying machine learning part-time at Georgia Tech.</p>
-          <p>The work I like best sits where gameplay systems meet model behaviour.</p>
-          <p>I speak English natively and Greek proficiently. Away from a keyboard: chess, tennis and music.</p>
+          <p>These days I build web applications at Gecko Software, and I'm doing a master's in computer science at Georgia Tech part-time, specialising in machine learning.</p>
+          <p>I speak English and Greek. Away from the keyboard it's chess, tennis and music.</p>
         </div>
       </div>
     </article>
@@ -520,25 +494,25 @@
         <div class="e-body">
           <h3 class="e-title">M.S. Computer Science, Georgia Institute of Technology</h3>
           <p class="e-meta">OMSCS · January 2026 – 2029 (expected) · Machine Learning specialization</p>
-          <p class="e-summary">Part-time, alongside full-time work. Completed CS 7646 Machine Learning for Trading; currently taking CS 7641 Machine Learning.</p>
+          <p class="e-summary">Part-time, alongside full-time work. Courses so far: Machine Learning for Trading, and Machine Learning.</p>
         </div>
       </article>
       <article class="edu-item" id="deree" data-entry data-district="archive" data-kind="project">
         <div class="e-body">
           <h3 class="e-title">B.Sc. Information Technology, Deree — The American College of Greece</h3>
           <p class="e-meta">Software Development · May 2024 · validated by The Open University (UK)</p>
-          <p class="e-summary">GPA 3.95 / 4.00, Honors Program. My honors thesis is the depression-detection project above.</p>
+          <p class="e-summary">Honors Program, GPA 3.95 / 4.00. My thesis is the depression-detection project above.</p>
         </div>
       </article>
     </div>
   </div>
 
   <dl class="skills" id="skills">
-    <div><dt>Game development</dt><dd>Unity (C#) · Android (Java) · 2D gameplay systems · navigation and pathfinding · state machines · collision and physics · sprite and animation pipelines · build and Play Store deployment</dd></div>
-    <div><dt>Machine learning</dt><dd>Keras · LSTM and sequence models · model evaluation (leave-one-out scoring, error distributions) · local LLM inference (GGUF, llamafile, LLMUnity) · prompt design for structured output</dd></div>
     <div><dt>Languages</dt><dd>C# · Java · Python · JavaScript · C · SQL · VB.NET · Bash</dd></div>
+    <div><dt>Games</dt><dd>Unity · Android · gameplay systems · pathfinding · state machines · Play Store release</dd></div>
+    <div><dt>Machine learning</dt><dd>Keras · LSTMs · model evaluation · running language models locally · prompt design</dd></div>
     <div><dt>Web and data</dt><dd>ASP.NET · SQL Server · PostgreSQL · Django · HTML and CSS</dd></div>
-    <div><dt>Tools</dt><dd>Unity · Android Studio · Git (including LFS) · Visual Studio · VS Code · PyCharm · IntelliJ · Photoshop · Illustrator</dd></div>
+    <div><dt>Tools</dt><dd>Git · Visual Studio · VS Code · Android Studio · Photoshop · Illustrator</dd></div>
   </dl>
 </section>
 
@@ -610,7 +584,7 @@
   <article class="contact-card" id="contact-me" data-entry data-district="hub" data-kind="project">
     <div class="e-body">
       <h2 class="e-title">Get in touch</h2>
-      <p class="e-summary">I'm based in Chicago. The fastest way to reach me is email.</p>
+      <p class="e-summary">Email is the best way to reach me. I'm in Chicago.</p>
       <p class="e-links contact-links">
         <a class="btn btn-primary" href="mailto:c.macris@gatech.edu">c.macris@gatech.edu</a>
         <a class="btn" href="https://www.linkedin.com/in/constantine-macris/" target="_blank" rel="noopener">LinkedIn</a>
@@ -623,16 +597,16 @@
   <div class="footer-meta">
     <article id="colophon" data-entry data-district="workshop" data-kind="project">
       <div class="e-body">
-        <h3 class="e-title visually-hidden">How this site is built</h3>
-        <p class="e-summary">This site is hand-written HTML, CSS and JavaScript, with no framework and no build step.</p>
+        <h3 class="e-title visually-hidden">How this site was made</h3>
+        <p class="e-summary">I built this site with Claude, Anthropic's AI coding assistant. I directed it and play-tested it; Claude wrote the code and drew the pixel art.</p>
         <div class="e-more is-open">
-          <p>The game world is drawn to a single canvas. Its sprites are written as text in the source and painted at load, its rooms are generated from small text maps, and its sound is synthesised in the browser. Progress is saved in your browser only; there is no tracking.</p>
+          <p>It is plain HTML, CSS and JavaScript, with no framework and no build step. The game is drawn on a single canvas, its sprites and rooms are written as text in the source, and its sound is synthesised in the browser. The cats and taxis in the Taxi Cat cabinet are the sprites from my original game. Progress is saved in your browser only, and there is no tracking.</p>
         </div>
         <p class="e-links"><a href="https://github.com/macrisconstantine/macrisconstantine.github.io" target="_blank" rel="noopener">Source for this site</a></p>
       </div>
     </article>
     <p class="footer-actions">
-      <button class="linkish js-only" type="button" data-action="print">Print as a résumé</button>
+      <button class="linkish js-only" type="button" data-action="print">Print this page</button>
       <span>© 2026 Constantine Macris</span>
     </p>
   </div>
@@ -648,7 +622,9 @@
   <div class="hud" id="hud">
     <div class="hud-where">
       <strong id="hud-zone">The Crossroads</strong>
-      <span id="hud-count"></span>
+      <span class="hud-frag" id="hud-frag" title="Fragments collected">
+        <svg viewBox="0 0 8 8" aria-hidden="true"><path d="M4 0l4 4-4 4-4-4z"/></svg><b id="hud-count">0</b><i>/<span id="hud-total">0</span></i>
+      </span>
     </div>
     <div class="hud-actions">
       <button type="button" class="hud-btn" data-action="journal" title="Journal (J or Esc)"><span>Journal</span><kbd>J</kbd></button>

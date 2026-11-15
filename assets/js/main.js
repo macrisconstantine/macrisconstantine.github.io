@@ -34,14 +34,16 @@ function boot() {
   if (!booting) {
     booting = import('./game.js').then(({ Game }) => {
       game = new Game(canvas);
-      // Anyone who has asked their system for less motion gets a still frame
-      // in the hero and a calmer game — with a switch to animate the preview
-      // if they would like to see it.
+      // Anyone who has asked their system for less motion gets a quiet hero:
+      // the character stands where it is, with only the lights and the
+      // fireflies moving, instead of touring the rooms. A switch starts the
+      // tour if they would like to see it. In play, the same setting swaps
+      // camera shake and the iris wipe for nothing and a fade.
       game.still = game.calm = reducedMotion;
       game.start();
       if (reducedMotion) {
         const cap = $('.stage-caption');
-        cap.insertAdjacentHTML('beforeend', '<button type="button" class="linkish">Animate the preview</button>');
+        cap.insertAdjacentHTML('beforeend', ' <button type="button" class="linkish">Watch it play itself</button>');
         cap.querySelector('button').addEventListener('click', (e) => { game.still = false; e.target.remove(); });
       }
       window.__game = game;

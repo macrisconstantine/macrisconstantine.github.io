@@ -12,7 +12,7 @@ import { REPOS } from './repos.js';
 export const DISTRICTS = [
   { id: 'hub',         name: 'The Crossroads',  sub: 'Start here',            color: '#7fd4a8' },
   { id: 'arcade',      name: 'The Arcade',      sub: 'Games',                 color: '#ff7ac8' },
-  { id: 'foundry',     name: 'The Foundry',     sub: 'Professional work',     color: '#ffb454' },
+  { id: 'foundry',     name: 'The Foundry',     sub: 'Day job',               color: '#ffb454' },
   { id: 'observatory', name: 'The Observatory', sub: 'Machine learning',      color: '#a99bff' },
   { id: 'vault',       name: 'The Terminal',    sub: 'Web, data and tools',   color: '#6ee7a0' },
   { id: 'archive',     name: 'The Archive',     sub: 'Background',            color: '#e6c56a' },
@@ -37,17 +37,18 @@ export const LISTS = {
 };
 
 export const ACHIEVEMENTS = [
-  { id: 'first',       name: 'First discovery',     desc: 'Read your first entry.' },
-  { id: 'arcade',      name: 'Arcade cleared',      desc: 'Read everything in The Arcade.' },
-  { id: 'foundry',     name: 'Foundry cleared',     desc: 'Read everything in The Foundry.' },
-  { id: 'observatory', name: 'Observatory cleared', desc: 'Read everything in The Observatory.' },
-  { id: 'vault',       name: 'Terminal cleared',    desc: 'Read everything in The Terminal.' },
-  { id: 'archive',     name: 'Archive cleared',     desc: 'Read everything in The Archive.' },
+  { id: 'first',       name: 'First fragment',      desc: 'Collect your first fragment.' },
+  { id: 'arcade',      name: 'Arcade cleared',      desc: 'Collect every fragment in The Arcade.' },
+  { id: 'foundry',     name: 'Foundry cleared',     desc: 'Collect every fragment in The Foundry.' },
+  { id: 'observatory', name: 'Observatory cleared', desc: 'Collect every fragment in The Observatory.' },
+  { id: 'vault',       name: 'Terminal cleared',    desc: 'Collect every fragment in The Terminal.' },
+  { id: 'archive',     name: 'Archive cleared',     desc: 'Collect every fragment in The Archive.' },
   { id: 'played',      name: 'Hands on',            desc: 'Start one of the playable builds.' },
   { id: 'shell',       name: 'Shell access',        desc: 'Run a command in the terminal.' },
   { id: 'crate',       name: 'Through, not around', desc: 'Roll through a crate.' },
+  { id: 'pet',         name: 'Good company',        desc: 'Pet the cat.' },
   { id: 'taxi',        name: 'Street smart',        desc: 'Score 300 in Taxi Cat.' },
-  { id: 'all',         name: 'Everything',          desc: 'Read every entry. The Workshop opens.' },
+  { id: 'all',         name: 'Everything',          desc: 'Collect every fragment. The Workshop opens.' },
 ];
 
 const repoByName = Object.fromEntries(REPOS.map((r) => [r.name, r]));

@@ -120,6 +120,10 @@ async function main() {
   check('the canvas moves into the full-window stage', document.querySelector('#stage-play').contains(g.canvas));
   check('the view is a whole number of device pixels per world pixel',
     Number.isInteger(Math.round(g.screen.scale * devicePixelRatio * 1000) / 1000), g.screen.scale * devicePixelRatio);
+  const box = g.canvas.getBoundingClientRect();
+  check('the canvas is drawn at screen resolution, not stretched up from a small one',
+    g.screen.fine && g.screen.px >= 2 && Math.abs(g.canvas.width - box.width * devicePixelRatio) <= 1.5,
+    `${g.canvas.width} canvas px across ${box.width} CSS px at ${devicePixelRatio}x, ${g.screen.px} per world px`);
   const playSpace = press('Space');
   check('in play, the game owns the keyboard', playSpace.defaultPrevented);
   g.manual = true;      // from here the suite steps the simulation itself
@@ -160,6 +164,54 @@ async function main() {
   check('rolling into a wall leaves you inside the room', g.player.x > TILE, g.player.x.toFixed(1));
   g.input.release();
 
+  place('arcade', 2, 5);
+  g.input.held.add('left'); g.input.pressed.add('dash'); step(7);
+  check('a roll that hits a wall ends there instead of hanging against it', g.player.dash <= 0, g.player.dash.toFixed(3));
+  g.input.release();
+
+  place('arcade', 3, 5);
+  g.input.held.add('right'); g.input.pressed.add('dash');
+  let guard = 0;
+  while (g.player.dash > 0 || guard === 0) { step(1); if (++guard > 40) break; }
+  g.input.pressed.add('dash');              // pressed during the cooldown: too early
+  let chained = false;
+  for (let i = 0; i < 14; i++) { step(1); if (g.player.dash > 0) chained = true; }
+  check('a roll pressed a moment too early still happens', chained);
+  g.input.release();
+
+  /* ----------------------------- smoothness ----------------------------- */
+
+  // Walk across a room while the camera follows. Two things make movement
+  // look smooth: the character is drawn within a screen pixel of where it
+  // really is (not snapped to a world pixel, which is several screen pixels),
+  // and one frame's travel is nearly the same as the next.
+  place('arcade', 3, 5);
+  g.input.held.add('right');
+  step(30);
+  const px = g.screen.px, perWorld = g.screen.scale * devicePixelRatio, travel = [];
+  let lastX = Math.round(g.player.x * px), worstOff = 0;
+  g.cam.grid = px;
+  for (let i = 0; i < 70; i++) {
+    step(1);
+    const drawn = Math.round((g.player.x - g.cam.ox) * px) / px;       // where the sprite's centre lands
+    const truly = g.player.x - g.cam.x;                                // where it would with no rounding at all
+    worstOff = Math.max(worstOff, Math.abs(drawn - truly) * perWorld);
+    const x = Math.round(g.player.x * px);
+    travel.push(x - lastX); lastX = x;
+  }
+  g.input.release();
+  const spread = (a) => Math.max(...a) - Math.min(...a);
+  const mean = travel.reduce((s, v) => s + v, 0) / travel.length;
+  check('the character is drawn within a screen pixel of where it really is', worstOff <= 1.05, `${worstOff.toFixed(2)} device px out`);
+  check('one frame of walking covers nearly the same ground as the next', spread(travel) / mean < 0.36,
+    `${Math.min(...travel)} to ${Math.max(...travel)} canvas px a frame`);
+
+  place('hub', 2, 5);
+  g.player.y += 4;                           // a few pixels low for the west door
+  g.input.held.add('left'); step(70); g.input.release();
+  check('a doorway steers you in when you are a few pixels off line', g.room.id === 'arcade', g.room.id);
+  g.wipe = null;
+
   place('arcade', 3, 9);
   g.input.held.add('left'); step(10); g.input.pressed.add('dash'); step(16);
   check('rolling goes through a crate', g.room.decor.some((d) => d.smash && d.broken));
@@ -176,10 +228,19 @@ async function main() {
   step(40);
 
   place('arcade', 2, 3);
+  step(4);
+  const counter = () => document.querySelector('#hud-count').textContent;
+  const before = Number(counter());
   press('KeyE'); step(1);
   check('E opens what is in reach', ui.open && ui.current === 'pottimea');
+  check('reading something earns its fragment, held back while the panel is up',
+    save.has('pottimea') && g.pending.includes('pottimea') && Number(counter()) === before, `${counter()} shown, ${g.pending}`);
   press('KeyE'); step(1);
   check('E closes what it opened', !ui.open);
+  step(2);
+  check('the fragment leaves the exhibit once you can see it', g.motes.length === 1 && !g.pending.length, `${g.motes.length} in flight`);
+  step(150);
+  check('it flies to you and the counter ticks up when it lands', !g.motes.length && Number(counter()) === before + 1, `${counter()} shown, ${g.motes.length} in flight`);
   press('KeyE'); step(1);
   press('Space'); step(1);
   check('space closes an open panel', !ui.open);
@@ -196,7 +257,8 @@ async function main() {
   cmd.value = 'cat work/price-estimator.txt';
   document.querySelector('#term-form').requestSubmit();
   const out = document.querySelector('#term-out').textContent;
-  check('terminal files are generated from the page', out.includes('229') && out.includes('97%'), out.slice(-200));
+  const onPage = document.querySelector('#estimator .e-summary').textContent.replace(/\s+/g, ' ').trim();
+  check('terminal files are generated from the page', onPage.length > 40 && out.includes(onPage), out.slice(-200));
   press('Escape'); step(1);
   check('Escape closes the terminal', !ui.open);
 
@@ -255,6 +317,35 @@ async function main() {
   press('Space'); step(1);
   check('space rolls past the cat rather than talking to it', !ui.open && g.player.dash > 0);
   step(40);
+
+  place('hub', 13, 9); step(40);
+  press('KeyE'); step(1);
+  check('E on the cat pets it: hearts, and no panel', !ui.open && g.floaters.length === 3 && save.earned('pet'), `${g.floaters.length} hearts`);
+  step(50);
+  check('a cat left alone sits down', g.companion.idle > 0.45 && Math.hypot(g.companion.vx, g.companion.vy) < 2, g.companion.idle.toFixed(2));
+
+  /* --------------------------------- the ball --------------------------- */
+
+  const ball = g.ball, ballHome = ROOMS.hub.ball[0] * TILE + 8;
+  save.set('metCat', false);                 // the cat would chase it and bat it back, at random
+  place('hub', 13, 10);
+  ball.x = ballHome; ball.y = ROOMS.hub.ball[1] * TILE + 8; ball.vx = ball.vy = 0;
+  g.input.held.add('right');
+  for (let i = 0; i < 60 && !ball.vx; i++) step(1);     // walk up to it...
+  step(12);                                              // ...and a fifth of a second after the kick
+  g.input.release();
+  check('walking into the ball kicks it away from you', ball.x > ballHome + 10 && ball.x - g.player.x > 12,
+    `ball ${ballHome} -> ${ball.x.toFixed(0)}, player at ${g.player.x.toFixed(0)}`);
+  step(400);
+  const bt = [Math.floor(ball.x / TILE), Math.floor(ball.y / TILE)];
+  check('the ball comes to rest somewhere it can be reached', Math.hypot(ball.vx, ball.vy) === 0 && !isSolid(g.room, bt[0], bt[1]), bt);
+
+  save.set('metCat', true);
+  place('hub', 8, 10); step(30);
+  ball.x = 12 * TILE; ball.y = 10 * TILE + 8; ball.vx = 90; ball.vy = 0;
+  let closest = Infinity;
+  for (let i = 0; i < 90; i++) { step(1); closest = Math.min(closest, Math.hypot(g.companion.x - ball.x, g.companion.y - ball.y)); }
+  check('the cat goes after a moving ball', closest < 12, closest.toFixed(1));
 
   /* ----------------------- rendering: the old camera bug ---------------- */
 
@@ -316,6 +407,31 @@ async function main() {
   check('Exit returns to the page', g.mode === 'attract' && !document.body.classList.contains('playing'));
   check('the canvas goes back into the hero', document.querySelector('#stage-home').contains(g.canvas));
   check('the page is interactive again', !document.querySelector('main').inert);
+
+  /* ------------------------ the tour the hero plays --------------------- */
+
+  // Each room's walk has to be walkable: every point reached, no standing
+  // against a wall, and on to the next room in reasonable time.
+  g.manual = true;
+  const wasStill = g.still;
+  const lost = [];
+  for (const id of Object.keys(ROOMS).filter((k) => k !== 'workshop')) {
+    g.still = false; g.wipe = null;
+    g.tour = { i: 0, t: 0, wait: 0, stall: 0 };
+    g.enterRoom(id, ROOMS[id].spawn[0], ROOMS[id].spawn[1]);
+    let frames = 0, stalled = 0;
+    while (!g.wipe && frames < 1100) { g.update(DT); frames++; stalled = Math.max(stalled, g.tour.stall); }
+    if (!g.wipe || stalled > 0.5) lost.push(`${id}: ${(frames / 60).toFixed(1)}s, stalled ${stalled.toFixed(2)}s`);
+  }
+  check('the self-playing tour walks every room without getting stuck', !lost.length, lost);
+
+  g.still = true; g.wipe = null;
+  g.tour = { i: 0, t: 0, wait: 0, stall: 0 };
+  g.enterRoom('hub', ROOMS.hub.spawn[0], ROOMS.hub.spawn[1]);
+  const stood = [g.player.x, g.player.y];
+  for (let i = 0; i < 300; i++) g.update(DT);
+  check('with reduced motion the hero stays put instead of touring', g.room.id === 'hub' && g.player.x === stood[0] && g.player.y === stood[1]);
+  g.still = wasStill; g.manual = false;
   save.reset();
 }
 

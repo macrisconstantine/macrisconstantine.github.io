@@ -104,11 +104,14 @@ main,.contact{max-width:var(--max); margin:0 auto; padding-left:var(--gutter); p
   transition:border-color .2s, box-shadow .2s, transform .2s;
 }
 .stage:hover{border-color:#6ee7a070; box-shadow:var(--shadow), 0 0 0 6px #6ee7a012}
-.stage canvas{image-rendering:pixelated; image-rendering:crisp-edges; flex:none; max-width:none}
+/* The canvas is sized in pixels by script, from the size of this box. It is
+   taken out of the flow so that it can never be what holds the box open:
+   otherwise narrowing the window leaves the stage — and the page — too wide. */
+.stage canvas{position:absolute; top:0; left:0; image-rendering:pixelated; image-rendering:crisp-edges; max-width:none}
 .stage-hint{
   position:absolute; right:12px; bottom:12px; pointer-events:none;
-  font-size:12.5px; color:var(--ink); background:#0d0c14cc; border:1px solid #ffffff1c;
-  padding:6px 10px; border-radius:999px; backdrop-filter:blur(6px);
+  font-size:12.5px; color:var(--ink); background:#0d0c14e0; border:1px solid #ffffff1c;
+  padding:6px 10px; border-radius:999px;
 }
 .stage-hint kbd{border:0; background:var(--accent); color:var(--accent-ink); font-weight:700; padding:3px 6px; margin-right:4px}
 .stage-caption{font-size:13.5px; color:var(--faint); margin-top:12px; text-align:center}
@@ -257,7 +260,7 @@ main,.contact{max-width:var(--max); margin:0 auto; padding-left:var(--gutter); p
 }
 .callout .e-body{display:flex; flex-wrap:wrap; align-items:center; gap:10px 28px}
 .callout .e-title{font-size:18px}
-.callout .e-summary{margin:0; flex:1; min-width:240px}
+.callout .e-summary{margin:0; flex:1; min-width:min(240px,100%)}
 .callout .e-links{margin:0}
 
 .repos{margin-top:20px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:24px}
