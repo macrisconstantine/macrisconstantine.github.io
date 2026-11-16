@@ -555,10 +555,28 @@ export class Game {
   /** Is there room for the character's feet here? A small box, low down, so
       they can tuck in behind tall objects. */
   free(x, y) {
-    const r = this.room, hw = 4, top = 2, bot = 7;
+    const hw = 4, top = 2, bot = 7;
     const l = Math.floor((x - hw) / TILE), rt = Math.floor((x + hw) / TILE);
     const t = Math.floor((y + top) / TILE), b = Math.floor((y + bot) / TILE);
-    return !isSolid(r, l, t) && !isSolid(r, rt, t) && !isSolid(r, l, b) && !isSolid(r, rt, b);
+    return !this.blocked(l, t) && !this.blocked(rt, t) && !this.blocked(l, b) && !this.blocked(rt, b);
+  }
+
+  /** A wall, an object — or a door that will not open yet, which is as
+      solid as a wall until it does. */
+  blocked(tx, ty) { return isSolid(this.room, tx, ty) || this.lockedDoorAt(tx, ty); }
+
+  lockedDoorAt(tx, ty) {
+    for (const e of this.room.exits) if (e.x === tx && e.y === ty && this.doorLocked(e)) return true;
+    return false;
+  }
+
+  /** Walking into a locked door: say why it will not open, but not on every frame. */
+  knock() {
+    if (this.t - (this._lockedAt ?? -9) < 3) return;
+    this._lockedAt = this.t;
+    this.sfx('bad');
+    const left = save.total - save.count;
+    ui.toast('The Workshop is locked', `It opens once you have every fragment. ${left} to go — the journal (J) shows where they are.`);
   }
 
   /** Move along one axis. `other` is how hard the player is pushing along
@@ -591,6 +609,11 @@ export class Game {
     }
     if (dx) { p.vx = 0; if (rolling) p.dashX = 0; }   // don't grind along a wall
     else { p.vy = 0; if (rolling) p.dashY = 0; }
+    if (this.mode === 'play') {
+      for (const ox of [-4, 4]) for (const oy of [2, 7]) {
+        if (this.lockedDoorAt(Math.floor((nx + ox) / TILE), Math.floor((ny + oy) / TILE))) { this.knock(); return; }
+      }
+    }
   }
 
   /** Roll into a crate and it does not survive the experience. */
@@ -787,17 +810,8 @@ export class Game {
     const p = this.player;
     const tx = Math.floor(p.x / TILE), ty = Math.floor(p.y / TILE);
     for (const e of this.room.exits) {
-      if (e.x !== tx || e.y !== ty) continue;
-      if (e.locked && !save.complete) {
-        p.y += 10; p.vx = p.vy = 0; p.dash = 0;
-        if (this.t - (this._lockedAt || -9) > 3) {
-          this._lockedAt = this.t;
-          this.sfx('bad');
-          const left = save.total - save.count;
-          ui.toast('The Workshop is locked', `It opens once you have every fragment. ${left} to go — the journal (J) shows where they are.`);
-        }
-        return;
-      }
+      // A locked door cannot be stood in: it blocks like a wall (see `blocked`).
+      if (e.x !== tx || e.y !== ty || this.doorLocked(e)) continue;
       this.go(e.to, e.tx, e.ty);
       return;
     }
@@ -1148,10 +1162,20 @@ export class Game {
       if (px < -TILE || px >= VIEW.w || py < -TILE || py >= VIEW.h || this.doorLocked(e)) continue;
       const w = textWidth(e.label) + 8;
       const lx = Math.max(w / 2 + 3, Math.min(VIEW.w - w / 2 - 3, px + TILE / 2));
-      const ly = py < 26 ? py + TILE + 5 : py - 14;
+      // Which side of the door the sign hangs on depends on where the door
+      // is in the room — under it for a door in the top wall, over it
+      // otherwise — and never on where it happens to be on screen, or the
+      // sign would hop from one side to the other as the camera scrolls.
+      const ly = e.y <= 1 ? py + TILE + 5 : py - 14;
+      // As a sign slides up under the top edge, where the HUD sits, it fades
+      // out rather than piling up there.
+      const a = Math.max(0, Math.min(1, (ly - 5) / 9));
+      if (a <= 0) continue;
+      c.globalAlpha = a;
       c.fillStyle = 'rgba(8,6,14,0.86)';
       c.fillRect(snap(lx - w / 2), ly - 2, w, 12);
       drawText(c, e.label, lx, ly + 1, e.color, 'center', false, 1, S);
+      c.globalAlpha = 1;
     }
   }
 

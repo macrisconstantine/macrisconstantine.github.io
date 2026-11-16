@@ -16,6 +16,16 @@
   --shadow:0 24px 60px -20px rgba(0,0,0,.7);
 }
 
+/* Tell the browser this is a dark page, so the things it draws itself —
+   scrollbars above all — are dark too, instead of a light bar on a dark panel. */
+:root{color-scheme:dark; scrollbar-color:#3d3856 var(--bg)}
+.sheet-inner,.repo-list,.term-out{scrollbar-width:thin; scrollbar-color:#4a4466 transparent}
+.sheet-inner::-webkit-scrollbar,.repo-list::-webkit-scrollbar,.term-out::-webkit-scrollbar{width:10px; height:10px}
+.sheet-inner::-webkit-scrollbar-track,.repo-list::-webkit-scrollbar-track,.term-out::-webkit-scrollbar-track{background:transparent}
+.sheet-inner::-webkit-scrollbar-thumb,.repo-list::-webkit-scrollbar-thumb,.term-out::-webkit-scrollbar-thumb{
+  background:#4a4466; border-radius:999px; border:3px solid transparent; background-clip:padding-box;
+}
+
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-behavior:smooth; scroll-padding-top:76px; -webkit-text-size-adjust:100%}
 body{
@@ -380,7 +390,7 @@ main,.contact{max-width:var(--max); margin:0 auto; padding-left:var(--gutter); p
    ---------------------------------------------------------------------- */
 
 @media print{
-  :root{--ink:#111; --ink2:#222; --dim:#444; --faint:#555; --accent:#111; --line:#ccc; --line2:#ccc}
+  :root{color-scheme:light; --ink:#111; --ink2:#222; --dim:#444; --faint:#555; --accent:#111; --line:#ccc; --line2:#ccc}
   body{background:#fff; color:#111; font-size:10pt; line-height:1.45}
   .site-nav,.skip,.hero-stage,.hero-actions,.filters,.e-media,.badge,.callout,.repos,.repo-links,
   .play,.sheet,.footer-actions,.js-only,#colophon,#more .section-head p{display:none!important}

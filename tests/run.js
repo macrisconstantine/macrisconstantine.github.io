@@ -373,11 +373,45 @@ async function main() {
   check('the player is drawn where the player is, wherever the camera has scrolled',
     errLeft <= 1 && errRight <= 1, `off by ${errLeft} at cam ${camLeft}, ${errRight} at cam ${camRight}`);
 
+  // A door's sign used to pick its side from where the door was on screen,
+  // so it hopped over the door and back as you walked up and down the room.
+  const { textSprite } = await import('../assets/js/sprites.js');
+  place('hub', 2, 3);
+  const westDoor = g.room.exits.find((e) => e.to === 'arcade');
+  const sign = textSprite(westDoor.label, westDoor.color, false).canvas;
+  const signOffset = () => {
+    let y = NaN;
+    const real = g.ctx.drawImage;
+    g.ctx.drawImage = function (img, ...rest) { if (img === sign) y = rest[1]; return real.call(this, img, ...rest); };
+    g.cam.snap(g.player.x, g.player.y, g.room.w * TILE, g.room.h * TILE);
+    g.render();
+    g.ctx.drawImage = real;
+    return y - (westDoor.y * TILE - g.cam.oy);
+  };
+  const signHigh = signOffset();
+  place('hub', 2, 12);
+  const signLow = signOffset();
+  // (With the camera right down, the sign may have faded out under the HUD
+  // instead — that is fine. What it must never do is change sides.)
+  check('a door sign stays on the same side of its door wherever the camera is',
+    signHigh < 0 && (Number.isNaN(signLow) || Math.abs(signHigh - signLow) < 0.01), `${signHigh} with the camera up, ${signLow} with it down`);
+
   /* ------------------------- travel and completion ---------------------- */
 
   place('hub', 13, 3);
-  g.input.held.add('up'); step(40); g.input.release();
+  g.input.held.add('up'); step(40);
+  const held = [];
+  for (let i = 0; i < 40; i++) { step(1); held.push(g.player.y); }
+  g.input.release();
   check('the Workshop is locked at first', g.room.id === 'hub');
+  check('pushing on the locked door holds you still, not bounced back over and over',
+    Math.max(...held) - Math.min(...held) < 0.01, `moved ${(Math.max(...held) - Math.min(...held)).toFixed(2)} px while pushing`);
+  check('the locked door says why it will not open',
+    [...document.querySelectorAll('#toasts .toast')].some((t) => /locked/i.test(t.textContent)));
+  place('hub', 13, 4);
+  g.input.held.add('up'); step(6); g.input.pressed.add('dash'); step(30); g.input.release();
+  // The feet box starts 2px below the player's centre; the door is tile row 1.
+  check('rolling at the locked door does not get through it either', g.room.id === 'hub' && g.player.y + 2 >= 2 * TILE - 0.01, g.player.y.toFixed(1));
 
   ui.openJournal();
   check('the journal lists every district', document.querySelectorAll('#sheet .j-district').length === DISTRICTS.length);
